@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "HT-Order-Management",
-    "slug": "ht-order-management",
+    "name": "Order-Management",
+    "slug": "order-management",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "ht-order-management",
+    "icon": "./assets/images/main_icon_300x300.png",
+    "scheme": "order-management",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.chatchefs.htmanagement",
+      "bundleIdentifier": "com.chatchefs.ordermanagement",
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
@@ -18,9 +18,9 @@
       }
     },
     "android": {
-      "package": "com.chatchefs.htmanagement",
+      "package": "com.chatchefs.ordermanagement",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/main_icon_300x300.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -28,7 +28,11 @@
         "INTERNET",
         "NOTIFICATIONS",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -38,6 +42,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Order-Management to access your microphone for order notification sounds."
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -51,13 +61,16 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {
-      "eas": {
-        "projectId": "9806ffa9-f4dc-46b5-861c-b6e16e435a9c"
-      }
-    },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2cb7747a-5834-4310-8ac7-08bcac33471e"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2cb7747a-5834-4310-8ac7-08bcac33471e"
     }
   }
 }
