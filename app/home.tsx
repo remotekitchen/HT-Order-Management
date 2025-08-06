@@ -1,8 +1,9 @@
+import OrderHistoryComponent from "@/components/OrderHistory";
 import RecentOrders from "@/components/RecentOrders";
 import SettingsPage from "@/components/SettingsPage";
 import Sidebar from "@/components/Sidebar";
 import React, { useState } from "react";
-import { Platform, StatusBar, Text, View } from "react-native";
+import { Platform, StatusBar, View } from "react-native";
 import Header from "../components/Header";
 
 function getStatusBarHeight() {
@@ -17,14 +18,7 @@ export default function Home() {
   const statusBarHeight = getStatusBarHeight();
 
   let SectionComponent = null;
-  if (activeSection === "orders")
-    SectionComponent = (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-xl font-bold text-gray-800">
-          This is my homepage
-        </Text>
-      </View>
-    );
+  if (activeSection === "orders") SectionComponent = <OrderHistoryComponent />;
   if (activeSection === "recent") SectionComponent = <RecentOrders />;
   if (activeSection === "settings") SectionComponent = <SettingsPage />;
 

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import FilterDropdown from "./FilterDropdown";
 import { useRecentOrders } from "./hooks";
-import OrderDetailsModal from "./OrderDetailsModal";
 import OrderList from "./OrderList";
 import Tabs from "./Tabs";
 
@@ -41,8 +40,6 @@ export default function RecentOrders() {
   } = useRecentOrders();
 
   const [search, setSearch] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const filteredOrders = orders.filter(
@@ -50,11 +47,6 @@ export default function RecentOrders() {
       order.customer.toLowerCase().includes(search.toLowerCase()) ||
       order.order_id.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleOrderPress = (order: any) => {
-    setSelectedOrder(order);
-    setModalVisible(true);
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -132,14 +124,9 @@ export default function RecentOrders() {
       </View>
       <OrderList
         orders={filteredOrders}
-        onOrderPress={handleOrderPress}
+        onOrderPress={() => {}} // Empty function since we're removing modal functionality
         refreshing={refreshing}
         onRefresh={onRefresh}
-      />
-      <OrderDetailsModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        order={selectedOrder}
       />
     </View>
   );

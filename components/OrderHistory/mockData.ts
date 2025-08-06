@@ -1,0 +1,230 @@
+import { OrderHistory } from "./types";
+
+export const mockOrderHistory: OrderHistory[] = [
+  {
+    id: 1,
+    order_id: "ORD-2024-001",
+    status: "completed",
+    restaurant: {
+      id: 1,
+      name: "Spice Garden Restaurant",
+      logo: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=100&h=100&fit=crop&crop=center",
+      address: "123 Main Street, Dhaka 1212",
+      phone: "+880 1712-345678",
+      email: "contact@spicegarden.com",
+    },
+    user: {
+      id: 1,
+      name: "Ahmed Hassan",
+      phone: "+880 1987-654321",
+      email: "ahmed.hassan@email.com",
+      address: "House 45, Road 12, Gulshan-2, Dhaka",
+      location: {
+        latitude: 23.7808875,
+        longitude: 90.4267327,
+        address: "House 45, Road 12, Gulshan-2, Dhaka",
+      },
+    },
+    orderitem_set: [
+      {
+        id: 1,
+        quantity: 4,
+        menu_item: {
+          id: 1,
+          name: "Chicken Biryani",
+          base_price: 74.5,
+          image:
+            "https://images.unsplash.com/photo-1563379091339-03246963d7d3?w=200&h=200&fit=crop",
+        },
+        subtotal: 298,
+      },
+      {
+        id: 2,
+        quantity: 2,
+        menu_item: {
+          id: 2,
+          name: "Mutton Curry",
+          base_price: 85,
+          image:
+            "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=200&h=200&fit=crop",
+        },
+        subtotal: 170,
+      },
+    ],
+    subtotal: 468,
+    tax: 23.4,
+    discount: 50,
+    delivery_fee: 25,
+    total: 466.4,
+    payment_method: "Cash on Delivery",
+    checkout_note: "Please ring the bell twice",
+    created_date: "2024-01-15T14:30:00Z",
+    completed_date: "2024-01-15T15:45:00Z",
+  },
+  {
+    id: 2,
+    order_id: "ORD-2024-002",
+    status: "completed",
+    restaurant: {
+      id: 2,
+      name: "Royal Feast",
+      logo: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&h=100&fit=crop&crop=center",
+      address: "456 Park Avenue, Dhaka 1215",
+      phone: "+880 1898-765432",
+      email: "info@royalfeast.com",
+    },
+    user: {
+      id: 2,
+      name: "Fatima Rahman",
+      phone: "+880 1876-543210",
+      email: "fatima.rahman@email.com",
+      address: "Apartment 8B, Green Road, Dhanmondi, Dhaka",
+      location: {
+        latitude: 23.7461,
+        longitude: 90.3742,
+        address: "Apartment 8B, Green Road, Dhanmondi, Dhaka",
+      },
+    },
+    orderitem_set: [
+      {
+        id: 3,
+        quantity: 2,
+        menu_item: {
+          id: 3,
+          name: "Beef Kebab Platter",
+          base_price: 120,
+          image:
+            "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=200&h=200&fit=crop",
+        },
+        subtotal: 240,
+      },
+      {
+        id: 4,
+        quantity: 1,
+        menu_item: {
+          id: 4,
+          name: "Naan Bread (4 pieces)",
+          base_price: 35,
+          image:
+            "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=200&h=200&fit=crop",
+        },
+        subtotal: 35,
+      },
+    ],
+    subtotal: 275,
+    tax: 13.75,
+    discount: 0,
+    delivery_fee: 30,
+    total: 318.75,
+    payment_method: "Online Payment",
+    created_date: "2024-01-14T18:15:00Z",
+    completed_date: "2024-01-14T19:20:00Z",
+  },
+  {
+    id: 3,
+    order_id: "ORD-2024-003",
+    status: "completed",
+    restaurant: {
+      id: 3,
+      name: "Deshi Ranna",
+      logo: "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=100&h=100&fit=crop&crop=center",
+      address: "789 Commercial Area, Dhaka 1205",
+      phone: "+880 1765-432109",
+      email: "hello@deshiranna.com",
+    },
+    user: {
+      id: 3,
+      name: "Mohammad Ali",
+      phone: "+880 1654-321098",
+      email: "mohammad.ali@email.com",
+      address: "Plot 25, Banani Model Town, Dhaka",
+      location: {
+        latitude: 23.7936,
+        longitude: 90.4066,
+        address: "Plot 25, Banani Model Town, Dhaka",
+      },
+    },
+    orderitem_set: [
+      {
+        id: 5,
+        quantity: 3,
+        menu_item: {
+          id: 5,
+          name: "Fish Curry with Rice",
+          base_price: 95,
+          image:
+            "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200&h=200&fit=crop",
+        },
+        subtotal: 285,
+      },
+    ],
+    subtotal: 285,
+    tax: 14.25,
+    discount: 25,
+    delivery_fee: 20,
+    total: 294.25,
+    payment_method: "bKash",
+    checkout_note: "Call when you arrive",
+    created_date: "2024-01-13T12:45:00Z",
+    completed_date: "2024-01-13T13:30:00Z",
+  },
+  {
+    id: 4,
+    order_id: "ORD-2024-004",
+    status: "completed",
+    restaurant: {
+      id: 1,
+      name: "Spice Garden Restaurant",
+      logo: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=100&h=100&fit=crop&crop=center",
+      address: "123 Main Street, Dhaka 1212",
+      phone: "+880 1712-345678",
+      email: "contact@spicegarden.com",
+    },
+    user: {
+      id: 4,
+      name: "Rashida Begum",
+      phone: "+880 1543-210987",
+      email: "rashida.begum@email.com",
+      address: "House 78, Road 5, Uttara Sector 7, Dhaka",
+      location: {
+        latitude: 23.8759,
+        longitude: 90.3795,
+        address: "House 78, Road 5, Uttara Sector 7, Dhaka",
+      },
+    },
+    orderitem_set: [
+      {
+        id: 6,
+        quantity: 2,
+        menu_item: {
+          id: 6,
+          name: "Vegetable Biryani",
+          base_price: 65,
+          image:
+            "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200&h=200&fit=crop",
+        },
+        subtotal: 130,
+      },
+      {
+        id: 7,
+        quantity: 1,
+        menu_item: {
+          id: 7,
+          name: "Raita (Large)",
+          base_price: 25,
+          image:
+            "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=200&h=200&fit=crop",
+        },
+        subtotal: 25,
+      },
+    ],
+    subtotal: 155,
+    tax: 7.75,
+    discount: 15,
+    delivery_fee: 25,
+    total: 172.75,
+    payment_method: "Nagad",
+    created_date: "2024-01-12T20:00:00Z",
+    completed_date: "2024-01-12T21:15:00Z",
+  },
+];

@@ -14,6 +14,7 @@ import "nativewind";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import OTAUpdateModal from "../components/OTAUpdateModal";
@@ -114,19 +115,21 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <NativeBaseProvider theme={theme}>
-        <Provider store={store}>
-          <StatusBar style="auto" translucent />
+    <SafeAreaProvider>
+      <View style={{ flex: 1 }}>
+        <NativeBaseProvider theme={theme}>
+          <Provider store={store}>
+            <StatusBar style="auto" translucent />
 
-          <AuthGate />
-          <Toast />
-          <OTAUpdateModal
-            visible={showUpdateModal}
-            onUpdateComplete={() => setShowUpdateModal(false)}
-          />
-        </Provider>
-      </NativeBaseProvider>
-    </View>
+            <AuthGate />
+            <Toast />
+            <OTAUpdateModal
+              visible={showUpdateModal}
+              onUpdateComplete={() => setShowUpdateModal(false)}
+            />
+          </Provider>
+        </NativeBaseProvider>
+      </View>
+    </SafeAreaProvider>
   );
 }
