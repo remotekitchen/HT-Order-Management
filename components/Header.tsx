@@ -1,6 +1,8 @@
-import { Menu } from "lucide-react-native";
+import { completeLogout } from "@/redux/feature/authentication/authenticationSlice";
+import { LogOut } from "lucide-react-native";
 import React from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch } from "react-redux";
 
 interface HeaderProps {
   onMenuPress: () => void;
@@ -8,11 +10,37 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuPress, onHelpCenterPress }) => {
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: () => {
+            dispatch(completeLogout());
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-      <TouchableOpacity onPress={onMenuPress} className="p-2">
-        <Menu size={28} color="#222" />
+      {/* Logout icon on the left side */}
+      <TouchableOpacity onPress={handleLogout} className="p-2">
+        <LogOut size={28} color="#222" />
       </TouchableOpacity>
+
+      {/* Order Management text in the middle */}
+      <Text className="text-xl font-bold text-gray-800 flex-1 text-center">
+        Order Management
+      </Text>
 
       {/* Logo on the right side */}
       <TouchableOpacity onPress={onHelpCenterPress} className="p-2">

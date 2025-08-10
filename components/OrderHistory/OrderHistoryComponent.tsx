@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import RecentOrders from "../RecentOrders";
 import Header from "./Header";
 import { mockOrderHistory } from "./mockData";
 import OrderGridItem from "./OrderGridItem";
@@ -16,6 +17,7 @@ export default function OrderHistoryComponent() {
   const [layoutType, setLayoutType] = useState<LayoutType>("list");
   const [refreshing, setRefreshing] = useState(false);
   const [orders, setOrders] = useState<OrderHistory[]>(mockOrderHistory);
+  const [activeTab, setActiveTab] = useState<"incoming" | "recent">("incoming");
 
   const listOpacity = useSharedValue(1);
   const gridOpacity = useSharedValue(0);
@@ -98,11 +100,32 @@ export default function OrderHistoryComponent() {
     />
   );
 
+  const handleTabChange = (tab: "incoming" | "recent") => {
+    setActiveTab(tab);
+  };
+
+  // If Recent Orders tab is selected, show the RecentOrders component
+  if (activeTab === "recent") {
+    return (
+      <View className="flex-1 bg-gray-50">
+        <Header
+          totalOrders={orders.length}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+        <RecentOrders />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Sticky Header */}
-      {/* @ts-ignore */}
-      <Header layoutType={layoutType} onLayoutChange={handleLayoutChange} />
+      <Header
+        totalOrders={orders.length}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       {/* Content */}
       <View className="flex-1">

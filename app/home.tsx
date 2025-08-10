@@ -25,8 +25,8 @@ export default function Home() {
   return (
     <View className="flex-1 bg-white relative">
       {/* Black status bar area */}
-      <View style={{ height: statusBarHeight, backgroundColor: "#000" }}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <View style={{ height: statusBarHeight, backgroundColor: "#ffffff" }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       </View>
       {/* Header below status bar */}
       <Header

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import Animated, { Layout } from "react-native-reanimated";
+import RecentOrders from "../RecentOrders";
 import Header from "./Header";
 import { mockOrderHistory } from "./mockData";
 import OrderListItem from "./OrderListItem";
@@ -9,6 +10,7 @@ import { OrderHistory } from "./types";
 export default function OrderHistoryComponent() {
   const [refreshing, setRefreshing] = useState(false);
   const [orders, setOrders] = useState<OrderHistory[]>(mockOrderHistory);
+  const [activeTab, setActiveTab] = useState<"incoming" | "recent">("incoming");
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -32,10 +34,32 @@ export default function OrderHistoryComponent() {
     />
   );
 
+  const handleTabChange = (tab: "incoming" | "recent") => {
+    setActiveTab(tab);
+  };
+
+  // If Recent Orders tab is selected, show the RecentOrders component
+  if (activeTab === "recent") {
+    return (
+      <View style={styles.container}>
+        <Header
+          totalOrders={orders.length}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+        <RecentOrders />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Sticky Header */}
-      <Header totalOrders={orders.length} />
+      <Header
+        totalOrders={orders.length}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       {/* Content */}
       <View style={styles.content}>

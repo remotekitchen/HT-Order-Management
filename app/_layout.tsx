@@ -1,6 +1,6 @@
 import {
+  restoreAuthState,
   selectToken,
-  userLoggedIn,
 } from "@/redux/feature/authentication/authenticationSlice";
 import { store } from "@/redux/store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -33,7 +33,7 @@ function AuthGate() {
       if (authData) {
         const { token, user } = JSON.parse(authData);
         if (token && user) {
-          dispatch(userLoggedIn({ token, user }));
+          dispatch(restoreAuthState({ token, user }));
         }
       }
     };

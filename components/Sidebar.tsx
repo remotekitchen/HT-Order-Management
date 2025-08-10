@@ -1,4 +1,4 @@
-import { userLoggedOut } from "@/redux/feature/authentication/authenticationSlice";
+import { completeLogout } from "@/redux/feature/authentication/authenticationSlice";
 import {
   ArrowLeft,
   Clock,
@@ -70,8 +70,8 @@ export default function Sidebar({
   onCloseRef.current = onClose;
 
   // Static restaurant info for demo
-  const restaurantLogo = require("../assets/images/icon.png");
-  const restaurantName = "My Restaurant";
+  const restaurantLogo = require("../assets/images/main_icon.png");
+  const restaurantName = "Order Management";
 
   React.useEffect(() => {
     if (visible) {
@@ -112,7 +112,7 @@ export default function Sidebar({
           text: "Yes",
           style: "destructive",
           onPress: () => {
-            dispatch(userLoggedOut());
+            dispatch(completeLogout());
             onClose();
           },
         },

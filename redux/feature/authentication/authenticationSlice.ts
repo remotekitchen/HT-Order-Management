@@ -42,9 +42,10 @@ const authenticationSlice = createSlice({
       state.token = undefined;
       state.user_info = undefined;
 
-      AsyncStorage.removeItem("auth").catch((err) =>
-        console.error("Failed to remove auth data:", err)
-      );
+      // Don't remove from AsyncStorage to keep user logged in across reloads
+      // AsyncStorage.removeItem("auth").catch((err) =>
+      //   console.error("Failed to remove auth data:", err)
+      // );
     },
 
     restoreAuthState: (
@@ -54,6 +55,16 @@ const authenticationSlice = createSlice({
       const { token, user } = action.payload;
       state.token = token;
       state.user_info = user;
+    },
+
+    // Complete logout that removes data from AsyncStorage
+    completeLogout: (state) => {
+      state.token = undefined;
+      state.user_info = undefined;
+
+      AsyncStorage.removeItem("auth").catch((err) =>
+        console.error("Failed to remove auth data:", err)
+      );
     },
   },
 });
@@ -67,7 +78,7 @@ interface RootState {
 export const selectToken = (state: RootState) => state.auth.token;
 export const selectUser = (state: RootState) => state.auth.user_info;
 
-export const { userLoggedIn, userLoggedOut, restoreAuthState } =
+export const { userLoggedIn, userLoggedOut, restoreAuthState, completeLogout } =
   authenticationSlice.actions;
 
 export default authenticationSlice.reducer;

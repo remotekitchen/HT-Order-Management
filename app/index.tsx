@@ -1,7 +1,6 @@
 import { useLoginMutation } from "@/redux/feature/authentication/authenticationApi";
-import { userLoggedIn } from "@/redux/feature/authentication/authenticationSlice";
+
 import { requestAllPermissions } from "@/utils/requestPermissions";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Updates from "expo-updates";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
@@ -16,7 +15,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { useDispatch } from "react-redux";
 
 export default function HomeScreen() {
   const [email, setEmail] = useState("");
@@ -27,7 +25,6 @@ export default function HomeScreen() {
     {}
   );
   const [login, { isLoading }] = useLoginMutation();
-  const dispatch = useDispatch();
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -49,14 +46,8 @@ export default function HomeScreen() {
     if (validate()) {
       try {
         const result = await login({ email, password }).unwrap();
-        await AsyncStorage.setItem(
-          "auth",
-          JSON.stringify({
-            token: result.token,
-            user: result.user_info,
-          })
-        );
-        dispatch(userLoggedIn({ token: result.token, user: result.user_info }));
+        // Auth data is automatically stored by the API slice
+        // No need to manually dispatch or store here
       } catch (error) {
         Toast.show({
           type: "error",

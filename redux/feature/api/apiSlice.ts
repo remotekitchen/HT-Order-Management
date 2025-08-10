@@ -1,13 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.chatchefs.com/",
+    baseUrl: "http://api.hungrytiger.chatchefs.com/",
     prepareHeaders: async (headers) => {
       headers.set("Content-Type", "application/json");
 
+      // Commented out all headers-related code
+      /*
       try {
         const authData = await AsyncStorage.getItem("auth");
         if (authData) {
@@ -26,10 +27,11 @@ export const apiSlice = createApi({
       } catch (err) {
         console.error("Failed to load auth token:", err);
       }
+      */
 
       return headers;
     },
   }),
-  tagTypes: ["ACCOUNT"],
+  tagTypes: ["ACCOUNT", "ORDERS"],
   endpoints: () => ({}),
 });
