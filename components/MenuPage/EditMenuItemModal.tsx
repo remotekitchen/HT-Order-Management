@@ -47,8 +47,6 @@ export default function EditMenuItemModal({
     return "";
   };
 
-  // console.log(JSON.stringify(item, null, 2), "item");
-
   const [category, setCategory] = useState(getCurrentCategoryName());
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [name, setName] = useState(item.name || "");
@@ -304,11 +302,6 @@ export default function EditMenuItemModal({
                   image,
                 };
 
-                console.log(
-                  "Updated Item Data:",
-                  JSON.stringify(updatedItem, null, 2)
-                );
-
                 // Create the API payload as an object (not form data)
                 const payload = {
                   name: name,
@@ -316,13 +309,6 @@ export default function EditMenuItemModal({
                   base_price: parseFloat(price),
                   category: getCategoryId(category),
                 };
-
-                console.log("API Payload (Individual Fields):");
-                console.log("itemId:", item.id);
-                console.log("name:", name);
-                console.log("description:", description);
-                console.log("base_price:", parseFloat(price));
-                console.log("category:", [getCategoryId(category)]); // Show as array
 
                 try {
                   const result = await updateItem({
@@ -332,8 +318,6 @@ export default function EditMenuItemModal({
                     base_price: parseFloat(price),
                     category: [getCategoryId(category)], // Send as array
                   }).unwrap();
-
-                  console.log("API Response:", result);
 
                   // Call onUpdate callback with updated item
                   onUpdate({
@@ -347,7 +331,6 @@ export default function EditMenuItemModal({
                   // Close modal
                   onClose();
                 } catch (error) {
-                  console.error("Error updating item:", error);
                   Alert.alert(
                     "Error",
                     "Failed to update item. Please try again."

@@ -1,5 +1,5 @@
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
-import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
+import { useOrderSoundManager } from "@/utils/orderSoundManager";
 import React, {
   useCallback,
   useEffect,
@@ -32,13 +32,16 @@ export default function OrdersSection({
   const [showEmptyState, setShowEmptyState] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Use refetch from both restaurant and orders
-  const { data: getRestaurants, refetch: refetchRestaurant } =
-    useGetRestaurantQuery({});
-  const restaurantName = getRestaurants?.results[0]?.name;
-  const restaurantId = getRestaurants?.results[0]?.id;
+  // Use a mock restaurant ID for now (you can replace this with actual restaurant logic)
+  const restaurantId = 1; // Mock restaurant ID
+  const restaurantName = "Restaurant"; // Mock restaurant name
   const { categorizedOrders, refetch: refetchOrders } =
     useRealtimeOrders(restaurantId);
+
+  // Integrate order sound manager for incoming orders
+  const { isPlaying, pendingOrdersCount } = useOrderSoundManager(
+    categorizedOrders.newOrders
+  );
 
   // Memoize the hasOrders check to prevent unnecessary re-renders
   const hasOrders = useMemo(() => {
@@ -91,13 +94,13 @@ export default function OrdersSection({
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchRestaurant(), refetchOrders?.()]);
+      await refetchOrders?.();
     } catch {
       // handle error silently
     } finally {
       setRefreshing(false);
     }
-  }, [refetchRestaurant, refetchOrders]);
+  }, [refetchOrders]);
 
   const handleReadyForDelivery = useCallback(() => {
     setReadyModalVisible(false);
@@ -279,6 +282,7 @@ export default function OrdersSection({
                 <OrderCategoryHeader
                   title="New"
                   count={categorizedOrders.newOrders.length}
+                  isPlaying={isPlaying}
                 />
                 {newOrdersContent}
               </View>

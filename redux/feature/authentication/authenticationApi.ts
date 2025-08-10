@@ -41,10 +41,6 @@ export const authenticationApi = apiSlice.injectEndpoints({
                 user: userData,
               })
             );
-
-            console.log(
-              "Token stored successfully in AsyncStorage and Redux state updated"
-            );
           }
         } catch (error) {
           console.error("Failed to handle login response:", error);

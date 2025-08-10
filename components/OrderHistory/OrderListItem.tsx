@@ -1,11 +1,14 @@
+import { copyToClipboard } from "@/utils/clipboard";
+import { Copy } from "lucide-react-native";
 import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import Toast from "react-native-toast-message";
 import OrderDetailsModal from "./OrderDetailsModal";
 import { OrderHistory } from "./types";
 
@@ -46,6 +49,61 @@ export default function OrderListItem({
 
   const handleCloseModal = () => {
     setModalVisible(false);
+  };
+
+  const handleCopyOrder = async () => {
+    try {
+      // Format the order data exactly as requested
+      const orderData = `Customer Name: ${order.user.first_name} ${
+        order.user.last_name
+      }
+Customer Phone: ${order.user.phone}
+Address: ${order.user.address}
+Total Amount: ${order.total}
+Item: ${order.orderitem_set
+        .map((item) => `${item.quantity}x ${item.menu_item.name}`)
+        .join(", ")}`;
+
+      // Try to copy to clipboard
+      const success = await copyToClipboard(orderData);
+
+      if (success) {
+        // Show success toast message
+        Toast.show({
+          type: "success",
+          text1: "Order copied!",
+          text2: "Order details copied to clipboard",
+          position: "bottom",
+          visibilityTime: 2000,
+        });
+      } else {
+        // Show the data in an alert so user can manually copy
+        Alert.alert("Order Details - Copy Manually", orderData, [
+          {
+            text: "OK",
+            style: "default",
+          },
+        ]);
+
+        Toast.show({
+          type: "info",
+          text1: "Data displayed",
+          text2: "Order details shown above - copy manually",
+          position: "bottom",
+          visibilityTime: 3000,
+        });
+
+        console.log("Order data ready to copy:", orderData);
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Copy failed",
+        text2: "Could not copy order details",
+        position: "bottom",
+        visibilityTime: 2000,
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -94,12 +152,19 @@ export default function OrderListItem({
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-900 mb-1">
-                  {order.restaurant.name}
-                </Text>
-                <Text className="text-sm text-gray-600">
-                  Order #{order.order_id}
-                </Text>
+                <View className="flex-row items-center mb-1">
+                  <Text className="text-lg font-semibold text-gray-900 mr-2">
+                    {order.restaurant.name}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleCopyOrder}
+                    className="p-1"
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Copy size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+                <Text className="text-sm text-gray-600">Order #{order.id}</Text>
               </View>
               <View className="items-end">
                 <Text className="text-lg font-bold text-green-600">
@@ -117,14 +182,14 @@ export default function OrderListItem({
                   <Text className="text-sm font-medium text-gray-700 mb-1">
                     Customer
                   </Text>
-                  <Text className="text-sm text-gray-600">
-                    {order.user.name}
+                  <Text className="text-sm font-medium text-gray-900 mb-1">
+                    {order.user.first_name} {order.user.last_name}
                   </Text>
-                  <Text
-                    className="text-xs text-gray-500 mt-1"
-                    numberOfLines={1}
-                  >
-                    {order.user.location.address}
+                  <Text className="text-xs text-gray-500 mb-1">
+                    {order.user.phone}
+                  </Text>
+                  <Text className="text-xs text-gray-500" numberOfLines={2}>
+                    {order.user.address}
                   </Text>
                 </View>
 

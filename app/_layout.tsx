@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import OTAUpdateModal from "../components/OTAUpdateModal";
 import "../global.css";
+import { cleanupOrderSoundManager } from "../utils/orderSoundManager";
 import { registerForPushNotificationsAsync } from "../utils/registerForPushNotifications";
 import Home from "./home";
 import HomeScreen from "./index";
@@ -81,9 +82,7 @@ export default function RootLayout() {
             setShowUpdateModal(true);
           }
         }
-      } catch (error) {
-        console.error("Error checking for updates:", error);
-      }
+      } catch (error) {}
     };
 
     // Check for updates when app starts (only in production)
@@ -106,6 +105,8 @@ export default function RootLayout() {
 
     return () => {
       subscription.remove();
+      // Cleanup order sound manager when app unmounts
+      cleanupOrderSoundManager();
     };
   }, []);
 

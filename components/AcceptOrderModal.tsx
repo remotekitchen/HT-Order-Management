@@ -89,7 +89,6 @@ export default function AcceptOrderModal({
       }, 2000);
     } catch (error: any) {
       console.error("Accept order error:", error);
-      Alert.alert("Error", "Failed to accept order. Please try again.");
     }
   };
 

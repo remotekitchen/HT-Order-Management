@@ -1,3 +1,4 @@
+import { useOrderSoundManager } from "@/utils/orderSoundManager";
 import React, { useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import Animated, {
@@ -8,16 +9,39 @@ import Animated, {
 } from "react-native-reanimated";
 import RecentOrders from "../RecentOrders";
 import Header from "./Header";
+import { useIncomingOrders } from "./hooks";
 import { mockOrderHistory } from "./mockData";
+import NoIncomingOrders from "./NoIncomingOrders";
 import OrderGridItem from "./OrderGridItem";
 import OrderListItem from "./OrderListItem";
+import PollingStatus from "./PollingStatus";
 import { LayoutType, OrderHistory } from "./types";
 
 export default function OrderHistoryComponent() {
   const [layoutType, setLayoutType] = useState<LayoutType>("list");
   const [refreshing, setRefreshing] = useState(false);
-  const [orders, setOrders] = useState<OrderHistory[]>(mockOrderHistory);
   const [activeTab, setActiveTab] = useState<"incoming" | "recent">("incoming");
+
+  // Use the custom hook for incoming orders
+  const {
+    orders: incomingOrders,
+    isLoading,
+    error,
+    isFetching,
+    refreshOrders,
+    hasOrders,
+    isPolling,
+    pausePolling,
+    resumePolling,
+    lastUpdateTime,
+  } = useIncomingOrders();
+
+  // Integrate order sound manager for incoming orders
+  const { isPlaying, pendingOrdersCount, stopSound } =
+    useOrderSoundManager(incomingOrders);
+
+  // Use real incoming orders for incoming tab, mock data for recent tab
+  const orders = activeTab === "incoming" ? incomingOrders : mockOrderHistory;
 
   const listOpacity = useSharedValue(1);
   const gridOpacity = useSharedValue(0);
@@ -48,25 +72,26 @@ export default function OrderHistoryComponent() {
     };
   });
 
-  const handleLayoutChange = (type: LayoutType) => {
-    if (type === "list") {
-      gridOpacity.value = withTiming(0, { duration: 200 });
-      setTimeout(() => {
-        setLayoutType(type);
-        listOpacity.value = withTiming(1, { duration: 300 });
-      }, 200);
+  const handleLayoutChange = (newLayout: LayoutType) => {
+    setLayoutType(newLayout);
+    if (newLayout === "list") {
+      listOpacity.value = withTiming(1, { duration: 300 });
+      gridOpacity.value = withTiming(0, { duration: 300 });
     } else {
-      listOpacity.value = withTiming(0, { duration: 200 });
-      setTimeout(() => {
-        setLayoutType(type);
-        gridOpacity.value = withTiming(1, { duration: 300 });
-      }, 200);
+      listOpacity.value = withTiming(0, { duration: 300 });
+      gridOpacity.value = withTiming(1, { duration: 300 });
     }
+  };
+
+  const handleTabChange = (tab: "incoming" | "recent") => {
+    setActiveTab(tab);
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call
+    if (activeTab === "incoming") {
+      await refreshOrders();
+    }
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -100,10 +125,6 @@ export default function OrderHistoryComponent() {
     />
   );
 
-  const handleTabChange = (tab: "incoming" | "recent") => {
-    setActiveTab(tab);
-  };
-
   // If Recent Orders tab is selected, show the RecentOrders component
   if (activeTab === "recent") {
     return (
@@ -118,68 +139,91 @@ export default function OrderHistoryComponent() {
     );
   }
 
+  // For Incoming tab, show real data or no orders message
   return (
     <View className="flex-1 bg-gray-50">
       {/* Sticky Header */}
       <Header
-        totalOrders={orders.length}
+        totalOrders={incomingOrders.length}
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        layoutType={layoutType}
+        onLayoutChange={handleLayoutChange}
+        isPlaying={isPlaying}
+        onStopSound={stopSound}
+      />
+
+      {/* Polling Status Bar */}
+      <PollingStatus
+        isPolling={isPolling}
+        isFetching={isFetching}
+        onPausePolling={pausePolling}
+        onResumePolling={resumePolling}
+        onRefresh={refreshOrders}
+        lastUpdateTime={lastUpdateTime}
       />
 
       {/* Content */}
       <View className="flex-1">
-        {layoutType === "list" ? (
-          <Animated.View
-            style={[listStyle, { flex: 1 }]}
-            layout={Layout.springify()}
-          >
-            <FlatList
-              data={orders}
-              renderItem={renderListItem}
-              keyExtractor={(item) => item.id.toString()}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingTop: 16, paddingBottom: 32 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={["#10B981"]}
-                  tintColor="#10B981"
-                />
-              }
-            />
-          </Animated.View>
+        {!hasOrders && !isLoading ? (
+          // Show no orders message when there are no incoming orders
+          <NoIncomingOrders />
         ) : (
-          <Animated.View
-            style={[gridStyle, { flex: 1 }]}
-            layout={Layout.springify()}
-          >
-            <FlatList
-              data={orders}
-              renderItem={renderGridItem}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={2}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                paddingTop: 16,
-                paddingBottom: 32,
-              }}
-              columnWrapperStyle={{
-                justifyContent: "space-between",
-                marginBottom: 12,
-              }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={["#10B981"]}
-                  tintColor="#10B981"
+          // Show orders in list or grid view
+          <>
+            {layoutType === "list" ? (
+              <Animated.View
+                style={[listStyle, { flex: 1 }]}
+                layout={Layout.springify()}
+              >
+                <FlatList
+                  data={orders}
+                  renderItem={renderListItem}
+                  keyExtractor={(item) => item.id.toString()}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingTop: 16, paddingBottom: 32 }}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                      colors={["#10B981"]}
+                      tintColor="#10B981"
+                    />
+                  }
                 />
-              }
-            />
-          </Animated.View>
+              </Animated.View>
+            ) : (
+              <Animated.View
+                style={[gridStyle, { flex: 1 }]}
+                layout={Layout.springify()}
+              >
+                <FlatList
+                  data={orders}
+                  renderItem={renderGridItem}
+                  keyExtractor={(item) => item.id.toString()}
+                  numColumns={2}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingHorizontal: 16,
+                    paddingTop: 16,
+                    paddingBottom: 32,
+                  }}
+                  columnWrapperStyle={{
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                  }}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                      colors={["#10B981"]}
+                      tintColor="#10B981"
+                    />
+                  }
+                />
+              </Animated.View>
+            )}
+          </>
         )}
       </View>
     </View>

@@ -1,4 +1,11 @@
-import { Clock, Inbox } from "lucide-react-native";
+import {
+  Clock,
+  Grid3X3,
+  Inbox,
+  List,
+  Volume2,
+  VolumeX,
+} from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import {
@@ -11,12 +18,20 @@ interface HeaderProps {
   totalOrders: number;
   activeTab: "incoming" | "recent";
   onTabChange: (tab: "incoming" | "recent") => void;
+  layoutType?: "list" | "grid";
+  onLayoutChange?: (layout: "list" | "grid") => void;
+  isPlaying?: boolean; // Add sound playing indicator
+  onStopSound?: () => void; // Add manual sound control
 }
 
 export default function Header({
   totalOrders,
   activeTab,
   onTabChange,
+  layoutType,
+  onLayoutChange,
+  isPlaying = false, // Default to false
+  onStopSound,
 }: HeaderProps) {
   const scale = useSharedValue(1);
 
@@ -34,6 +49,29 @@ export default function Header({
 
   return (
     <View className="bg-white px-4 pt-4 border-b border-gray-100 shadow-sm">
+      {/* Sound Indicator */}
+      {isPlaying && (
+        <View className="flex-row items-center justify-between mb-3 p-2 bg-orange-100 rounded-lg border border-orange-200">
+          <View className="flex-row items-center">
+            <Volume2 size={16} color="#f97316" style={{ marginRight: 6 }} />
+            <Text className="text-orange-700 text-sm font-medium">
+              🔊 New order notification sound playing
+            </Text>
+          </View>
+
+          {/* Manual Stop Button */}
+          {onStopSound && (
+            <TouchableOpacity
+              onPress={onStopSound}
+              className="p-2 bg-orange-200 rounded-lg"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <VolumeX size={16} color="#f97316" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
       {/* Tabs */}
       <View className="flex-row mb-4">
         <TouchableOpacity
@@ -110,6 +148,45 @@ export default function Header({
           </View>
         </TouchableOpacity>
       </View>
+
+      {/* Layout Toggle - Only show for incoming tab */}
+      {activeTab === "incoming" && layoutType && onLayoutChange && (
+        <View className="flex-row justify-end mb-3">
+          <View className="flex-row bg-gray-100 rounded-lg p-1">
+            <TouchableOpacity
+              onPress={() => onLayoutChange("list")}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 8,
+                backgroundColor:
+                  layoutType === "list" ? "#f97316" : "transparent",
+              }}
+            >
+              <List
+                size={16}
+                color={layoutType === "list" ? "white" : "#6B7280"}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => onLayoutChange("grid")}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 8,
+                backgroundColor:
+                  layoutType === "grid" ? "#f97316" : "transparent",
+              }}
+            >
+              <Grid3X3
+                size={16}
+                color={layoutType === "grid" ? "white" : "#6B7280"}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

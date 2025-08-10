@@ -34,7 +34,9 @@ const authenticationSlice = createSlice({
       state.user_info = user;
 
       AsyncStorage.setItem("auth", JSON.stringify({ token, user })).catch(
-        (err) => console.error("Failed to save auth data:", err)
+        (err) => {
+          // Failed to save auth data
+        }
       );
     },
 
@@ -62,9 +64,9 @@ const authenticationSlice = createSlice({
       state.token = undefined;
       state.user_info = undefined;
 
-      AsyncStorage.removeItem("auth").catch((err) =>
-        console.error("Failed to remove auth data:", err)
-      );
+      AsyncStorage.removeItem("auth").catch((err) => {
+        // Failed to remove auth data
+      });
     },
   },
 });

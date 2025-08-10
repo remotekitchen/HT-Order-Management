@@ -1,3 +1,4 @@
+import { useGetOrderHistoryQuery } from "@/redux/feature/order/orderApi";
 import { Search } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
@@ -30,14 +31,16 @@ export default function RecentOrders() {
   const {
     orders,
     orderCounts,
-    isLoading,
-    error,
+    // isLoading,
+    // error,
     dateFilter,
     setDateFilter,
     filter,
     setFilter,
     refetch,
   } = useRecentOrders();
+
+  const { data: RecentOrders, isLoading, error } = useGetOrderHistoryQuery();
 
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);

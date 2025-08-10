@@ -1,38 +1,37 @@
 import React, { useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import Animated, { Layout } from "react-native-reanimated";
 import RecentOrders from "../RecentOrders";
 import Header from "./Header";
+import { useIncomingOrders } from "./hooks";
 import { mockOrderHistory } from "./mockData";
+import NoIncomingOrders from "./NoIncomingOrders";
 import OrderListItem from "./OrderListItem";
-import { OrderHistory } from "./types";
 
 export default function OrderHistoryComponent() {
   const [refreshing, setRefreshing] = useState(false);
-  const [orders, setOrders] = useState<OrderHistory[]>(mockOrderHistory);
   const [activeTab, setActiveTab] = useState<"incoming" | "recent">("incoming");
+
+  // Use the custom hook for incoming orders
+  const {
+    orders: incomingOrders,
+    isLoading,
+    error,
+    refreshOrders,
+    hasOrders,
+  } = useIncomingOrders();
+
+  // Use real incoming orders for incoming tab, mock data for recent tab
+  const orders = activeTab === "incoming" ? incomingOrders : mockOrderHistory;
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call
+    if (activeTab === "incoming") {
+      await refreshOrders();
+    }
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   };
-
-  const renderListItem = ({
-    item,
-    index,
-  }: {
-    item: OrderHistory;
-    index: number;
-  }) => (
-    <OrderListItem
-      order={item}
-      index={index}
-      onPress={() => {}} // Empty function since we're removing modal functionality
-    />
-  );
 
   const handleTabChange = (tab: "incoming" | "recent") => {
     setActiveTab(tab);
@@ -52,24 +51,28 @@ export default function OrderHistoryComponent() {
     );
   }
 
+  // For Incoming tab, show real data or no orders message
   return (
     <View style={styles.container}>
-      {/* Sticky Header */}
       <Header
-        totalOrders={orders.length}
+        totalOrders={incomingOrders.length}
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />
-
-      {/* Content */}
       <View style={styles.content}>
-        <Animated.View style={styles.listContainer} layout={Layout.springify()}>
+        {!hasOrders && !isLoading ? (
+          // Show no orders message when there are no incoming orders
+          <NoIncomingOrders />
+        ) : (
+          // Show orders in list view
           <FlatList
             data={orders}
-            renderItem={renderListItem}
+            renderItem={({ item, index }) => (
+              <OrderListItem order={item} index={index} onPress={() => {}} />
+            )}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={styles.listContainer}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -79,7 +82,7 @@ export default function OrderHistoryComponent() {
               />
             }
           />
-        </Animated.View>
+        )}
       </View>
     </View>
   );
@@ -94,9 +97,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContainer: {
-    flex: 1,
-  },
-  listContent: {
     paddingTop: 16,
     paddingBottom: 32,
   },

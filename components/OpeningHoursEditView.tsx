@@ -74,11 +74,9 @@ export default function OpeningHoursEditView({
       fixedMinute = minute - 6;
       if (fixedMinute < 0) fixedMinute += 60;
     }
-    console.log("DEBUG onPickerOk:", { hour, minute, fixedMinute });
     const value = `${hour.toString().padStart(2, "0")}:${fixedMinute
       .toString()
       .padStart(2, "0")}`;
-    console.log("DEBUG value string:", value);
     handleShiftChange(picker.dayIdx, picker.shiftIdx, picker.field, value);
     closePicker();
   };

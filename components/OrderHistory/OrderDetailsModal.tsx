@@ -1,3 +1,11 @@
+import {
+  Clock,
+  CreditCard,
+  MapPin,
+  Package,
+  Phone,
+  User,
+} from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
   Dimensions,
@@ -94,7 +102,7 @@ export default function OrderDetailsModal({
           style={[
             {
               backgroundColor: "white",
-              height: "60%",
+              height: "85%",
               width: "100%",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
@@ -104,7 +112,7 @@ export default function OrderDetailsModal({
           ]}
         >
           {/* Header */}
-          <View className="flex-row items-center justify-between px-6 border-b border-gray-200">
+          <View className="flex-row items-center justify-between px-6 border-b border-gray-200 pb-4">
             <Text className="text-xl font-bold text-gray-900">
               Order Details
             </Text>
@@ -120,9 +128,9 @@ export default function OrderDetailsModal({
             className="flex-1 px-6"
             showsVerticalScrollIndicator={false}
           >
-            {/* Order Info */}
-            <View className="py-4">
-              <View className="flex-row items-center mb-4">
+            {/* Restaurant Info */}
+            <View className="py-4 border-b border-gray-100">
+              <View className="flex-row items-center mb-3">
                 <View className="w-12 h-12 rounded-full overflow-hidden mr-3">
                   <Image
                     source={{ uri: order.restaurant.logo }}
@@ -135,26 +143,117 @@ export default function OrderDetailsModal({
                     {order.restaurant.name}
                   </Text>
                   <Text className="text-sm text-gray-600">
-                    Order #{order.order_id}
+                    Order #{order.id}
                   </Text>
                 </View>
               </View>
 
-              <View className="bg-gray-50 rounded-lg p-4 mb-4">
-                <Text className="text-sm font-medium text-gray-700 mb-2">
-                  Order Date
+              <View className="flex-row items-center mb-2">
+                <MapPin size={16} color="#6B7280" />
+                <Text className="text-sm text-gray-600 ml-2 flex-1">
+                  {order.restaurant.address}
                 </Text>
-                <Text className="text-sm text-gray-600">
-                  {formatDate(order.created_date)}
+              </View>
+
+              <View className="flex-row items-center">
+                <Phone size={16} color="#6B7280" />
+                <Text className="text-sm text-gray-600 ml-2">
+                  {order.restaurant.phone}
                 </Text>
               </View>
             </View>
 
+            {/* Customer Info */}
+            <View className="py-4 border-b border-gray-100">
+              <View className="flex-row items-center mb-3">
+                <User size={20} color="#F97316" />
+                <Text className="text-lg font-semibold text-gray-900 ml-2">
+                  Customer Information
+                </Text>
+              </View>
+
+              <View className="bg-orange-50 rounded-lg p-4">
+                <Text className="text-base font-semibold text-gray-900 mb-2">
+                  {order.user.first_name} {order.user.last_name}
+                </Text>
+
+                <View className="flex-row items-center mb-2">
+                  <Phone size={16} color="#6B7280" />
+                  <Text className="text-sm text-gray-600 ml-2">
+                    {order.user.phone}
+                  </Text>
+                </View>
+
+                <View className="flex-row items-start">
+                  <MapPin size={16} color="#6B7280" className="mt-0.5" />
+                  <Text className="text-sm text-gray-600 ml-2 flex-1">
+                    {order.user.address}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Order Info */}
+            <View className="py-4 border-b border-gray-100">
+              <View className="flex-row items-center mb-3">
+                <Clock size={20} color="#F97316" />
+                <Text className="text-lg font-semibold text-gray-900 ml-2">
+                  Order Information
+                </Text>
+              </View>
+
+              <View className="bg-gray-50 rounded-lg p-4">
+                <View className="flex-row justify-between mb-2">
+                  <Text className="text-sm text-gray-600">Order Date</Text>
+                  <Text className="text-sm font-medium text-gray-900">
+                    {formatDate(order.created_date)}
+                  </Text>
+                </View>
+
+                <View className="flex-row justify-between mb-2">
+                  <Text className="text-sm text-gray-600">Status</Text>
+                  <View
+                    className={`px-3 py-1 rounded-full ${
+                      order.status === "completed"
+                        ? "bg-green-100"
+                        : order.status === "cancelled"
+                        ? "bg-red-100"
+                        : "bg-yellow-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-medium ${
+                        order.status === "completed"
+                          ? "text-green-800"
+                          : order.status === "cancelled"
+                          ? "text-red-800"
+                          : "text-yellow-800"
+                      }`}
+                    >
+                      {order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1)}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row justify-between">
+                  <Text className="text-sm text-gray-600">Payment Method</Text>
+                  <Text className="text-sm font-medium text-gray-900">
+                    {order.payment_method}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
             {/* Order Items */}
-            <View className="mb-4">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                Order Items
-              </Text>
+            <View className="py-4 border-b border-gray-100">
+              <View className="flex-row items-center mb-3">
+                <Package size={20} color="#F97316" />
+                <Text className="text-lg font-semibold text-gray-900 ml-2">
+                  Order Items
+                </Text>
+              </View>
+
               {order.orderitem_set.map((item, index) => (
                 <View
                   key={item.id}
@@ -164,7 +263,7 @@ export default function OrderDetailsModal({
                       : ""
                   }`}
                 >
-                  <View className="flex-1">
+                  <View className="flex-1 mr-3">
                     <Text className="text-sm font-medium text-gray-900">
                       {item.menu_item.name}
                     </Text>
@@ -172,20 +271,28 @@ export default function OrderDetailsModal({
                       Quantity: {item.quantity}
                     </Text>
                   </View>
-                  <Text className="text-sm font-semibold text-gray-900">
-                    ৳{item.subtotal.toFixed(2)}
-                  </Text>
+                  <View className="items-end">
+                    <Text className="text-sm font-semibold text-gray-900">
+                      ৳{item.subtotal.toFixed(2)}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                      ৳{item.menu_item.base_price.toFixed(2)} each
+                    </Text>
+                  </View>
                 </View>
               ))}
             </View>
 
             {/* Calculation */}
-            <View className="bg-gray-50 rounded-lg p-4 mb-4">
-              <Text className="text-lg font-semibold text-gray-900 mb-3">
-                Calculation
-              </Text>
+            <View className="py-4 border-b border-gray-100">
+              <View className="flex-row items-center mb-3">
+                <CreditCard size={20} color="#F97316" />
+                <Text className="text-lg font-semibold text-gray-900 ml-2">
+                  Order Summary
+                </Text>
+              </View>
 
-              <View>
+              <View className="bg-gray-50 rounded-lg p-4">
                 <View className="flex-row justify-between mb-2">
                   <Text className="text-sm text-gray-600">Subtotal</Text>
                   <Text className="text-sm font-medium text-gray-900">
@@ -220,12 +327,12 @@ export default function OrderDetailsModal({
                   </View>
                 )}
 
-                <View className="border-t border-gray-200 pt-2 mt-2">
+                <View className="border-t border-gray-200 pt-3 mt-3">
                   <View className="flex-row justify-between">
-                    <Text className="text-base font-semibold text-gray-900">
+                    <Text className="text-lg font-semibold text-gray-900">
                       Total
                     </Text>
-                    <Text className="text-base font-bold text-green-600">
+                    <Text className="text-lg font-bold text-green-600">
                       ৳{order.total.toFixed(2)}
                     </Text>
                   </View>
@@ -233,43 +340,22 @@ export default function OrderDetailsModal({
               </View>
             </View>
 
-            {/* Payment Info */}
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">
-                Payment Method
-              </Text>
-              <Text className="text-sm text-gray-600">
-                {order.payment_method}
-              </Text>
-            </View>
-
-            {/* Status */}
-            <View className="mb-6">
-              <Text className="text-sm font-medium text-gray-700 mb-1">
-                Status
-              </Text>
-              <View
-                className={`px-3 py-2 rounded-full self-start ${
-                  order.status === "completed"
-                    ? "bg-green-100"
-                    : order.status === "cancelled"
-                    ? "bg-red-100"
-                    : "bg-yellow-100"
-                }`}
-              >
-                <Text
-                  className={`text-sm font-medium ${
-                    order.status === "completed"
-                      ? "text-green-800"
-                      : order.status === "cancelled"
-                      ? "text-red-800"
-                      : "text-yellow-800"
-                  }`}
-                >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            {/* Additional Notes */}
+            {order.checkout_note && (
+              <View className="py-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Special Instructions
                 </Text>
+                <View className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                  <Text className="text-sm text-yellow-800">
+                    {order.checkout_note}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
+
+            {/* Bottom spacing */}
+            <View className="h-6" />
           </ScrollView>
         </Animated.View>
       </Animated.View>
