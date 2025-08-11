@@ -28,6 +28,7 @@ import HomeScreen from "./index";
 import { useGetIncomingOrdersQuery } from "@/redux/feature/order/orderApi";
 import { useAudioPlayer } from "expo-audio";
 import { useRef } from "react";
+import { subscribeToSoundPauseState } from "../utils/orderSoundManager";
 
 const theme = extendTheme({});
 
@@ -150,6 +151,13 @@ function GlobalOrderSoundListener() {
   });
   const player = useAudioPlayer(require("../assets/sound/order_sound.mp3"));
   const intervalRef = useRef<any>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Subscribe to global sound pause state
+  useEffect(() => {
+    const unsubscribe = subscribeToSoundPauseState(setIsPaused);
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     // Extract orders from the API response
@@ -160,7 +168,8 @@ function GlobalOrderSoundListener() {
     );
     const hasPending = pendingOrders.length > 0;
 
-    if (hasPending && !intervalRef.current) {
+    // Only play sound if there are pending orders AND sound is not paused
+    if (hasPending && !isPaused && !intervalRef.current) {
       // Start looping sound
       (async () => {
         try {
@@ -174,8 +183,8 @@ function GlobalOrderSoundListener() {
           await player.play();
         } catch (e) {}
       }, 2000); // Play every 2 seconds (adjust to match your sound length)
-    } else if (!hasPending && intervalRef.current) {
-      // Stop looping sound
+    } else if ((!hasPending || isPaused) && intervalRef.current) {
+      // Stop looping sound if no pending orders OR sound is paused
       clearInterval(intervalRef.current);
       intervalRef.current = null;
       player.pause();
@@ -188,7 +197,7 @@ function GlobalOrderSoundListener() {
       }
       player.pause();
     };
-  }, [incomingOrdersData, player]);
+  }, [incomingOrdersData, player, isPaused]);
 
   return null;
 }

@@ -113,25 +113,9 @@ export const useRecentOrders = () => {
     );
 
     return ordersArray.map((apiOrder: any) => {
-      // Map API status to component status
-      const mapStatus = (apiStatus: string) => {
-        const status = apiStatus?.toLowerCase();
-        if (status === "completed" || status === "delivered")
-          return "completed";
-        if (status === "cancelled" || status === "rejected") return "cancelled";
-        if (
-          status === "pending" ||
-          status === "accepted" ||
-          status === "preparing" ||
-          status === "ready"
-        )
-          return "ongoing";
-        return "ongoing"; // default to ongoing for unknown statuses
-      };
-
       return {
         id: apiOrder.id,
-        status: mapStatus(apiOrder.status),
+        status: apiOrder.status || "unknown", // Keep original status instead of mapping
         customer:
           `${apiOrder.user?.first_name || ""} ${
             apiOrder.user?.last_name || ""
@@ -152,11 +136,14 @@ export const useRecentOrders = () => {
         restaurant_logo:
           apiOrder.restaurant?.logo || "https://via.placeholder.com/100",
         restaurant_address:
-          apiOrder.restaurant?.location || "Address not available",
+          apiOrder.restaurant?.address ||
+          apiOrder.restaurant?.location ||
+          "Address not available",
         restaurant_phone: apiOrder.restaurant?.phone || "Phone not available",
         // Customer details
         customer_phone: apiOrder.user?.phone || "Phone not available",
         customer_address:
+          apiOrder.user?.address ||
           apiOrder.dropoff_address_details?.full_address ||
           apiOrder.pickup_address_details?.full_address ||
           "Address not available",
@@ -184,12 +171,29 @@ export const useRecentOrders = () => {
     // Apply status filter
     if (filter !== "all") {
       if (filter === "ongoing") {
-        orders = orders.filter(
-          (order: Order) =>
-            order.status !== "completed" && order.status !== "cancelled"
-        );
-      } else {
-        orders = orders.filter((order: Order) => order.status === filter);
+        // Filter for ongoing orders (pending, accepted, preparing, ready, etc.)
+        orders = orders.filter((order: Order) => {
+          const status = order.status?.toLowerCase();
+          return (
+            status === "pending" ||
+            status === "accepted" ||
+            status === "preparing" ||
+            status === "ready" ||
+            status === "ongoing"
+          );
+        });
+      } else if (filter === "completed") {
+        // Filter for completed orders
+        orders = orders.filter((order: Order) => {
+          const status = order.status?.toLowerCase();
+          return status === "completed" || status === "delivered";
+        });
+      } else if (filter === "cancelled") {
+        // Filter for cancelled orders
+        orders = orders.filter((order: Order) => {
+          const status = order.status?.toLowerCase();
+          return status === "cancelled" || status === "rejected";
+        });
       }
     }
 
@@ -201,14 +205,24 @@ export const useRecentOrders = () => {
     const orders = transformedOrders;
     return {
       all: orders.length,
-      ongoing: orders.filter(
-        (order: Order) =>
-          order.status !== "completed" && order.status !== "cancelled"
-      ).length,
-      completed: orders.filter((order: Order) => order.status === "completed")
-        .length,
-      cancelled: orders.filter((order: Order) => order.status === "cancelled")
-        .length,
+      ongoing: orders.filter((order: Order) => {
+        const status = order.status?.toLowerCase();
+        return (
+          status === "pending" ||
+          status === "accepted" ||
+          status === "preparing" ||
+          status === "ready" ||
+          status === "ongoing"
+        );
+      }).length,
+      completed: orders.filter((order: Order) => {
+        const status = order.status?.toLowerCase();
+        return status === "completed" || status === "delivered";
+      }).length,
+      cancelled: orders.filter((order: Order) => {
+        const status = order.status?.toLowerCase();
+        return status === "cancelled" || status === "rejected";
+      }).length,
     };
   }, [transformedOrders]);
 

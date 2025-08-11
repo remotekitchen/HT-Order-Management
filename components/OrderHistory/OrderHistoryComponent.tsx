@@ -43,6 +43,17 @@ export default function OrderHistoryComponent() {
   // Use real incoming orders for incoming tab, mock data for recent tab
   const orders = activeTab === "incoming" ? incomingOrders : mockOrderHistory;
 
+  // Calculate the correct total orders based on active tab
+  const getTotalOrders = () => {
+    if (activeTab === "incoming") {
+      return incomingOrders.length;
+    } else {
+      // For recent tab, return 0 since we'll show the RecentOrders component
+      // which has its own data and counts
+      return 0;
+    }
+  };
+
   const listOpacity = useSharedValue(1);
   const gridOpacity = useSharedValue(0);
 
@@ -125,12 +136,12 @@ export default function OrderHistoryComponent() {
     />
   );
 
-  // If Recent Orders tab is selected, show the RecentOrders component
+  // Show RecentOrders component when recent tab is active
   if (activeTab === "recent") {
     return (
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-white">
         <Header
-          totalOrders={orders.length}
+          totalOrders={0} // RecentOrders will show its own count
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
@@ -144,7 +155,7 @@ export default function OrderHistoryComponent() {
     <View className="flex-1 bg-gray-50">
       {/* Sticky Header */}
       <Header
-        totalOrders={incomingOrders.length}
+        totalOrders={getTotalOrders()}
         activeTab={activeTab}
         onTabChange={handleTabChange}
         layoutType={layoutType}

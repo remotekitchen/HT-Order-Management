@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
-import OrderDetailsModal from "./OrderDetailsModal";
+import { OrderDetailsModal } from "./OrderDetailsModal";
 import { OrderHistory } from "./types";
 
 interface OrderListItemProps {
@@ -69,13 +69,13 @@ Item: ${order.orderitem_set
 
       if (success) {
         // Show success toast message
-        Toast.show({
-          type: "success",
-          text1: "Order copied!",
-          text2: "Order details copied to clipboard",
-          position: "bottom",
-          visibilityTime: 2000,
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: "Order copied!",
+        //   text2: "Order details copied to clipboardrrr",
+        //   position: "bottom",
+        //   visibilityTime: 2000,
+        // });
       } else {
         // Show the data in an alert so user can manually copy
         Alert.alert("Order Details - Copy Manually", orderData, [

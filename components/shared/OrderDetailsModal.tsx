@@ -123,15 +123,21 @@ export default function OrderDetailsModal({
 
   const calculateSubtotal = () => {
     if (!order) return 0;
-    
+
     if (order.orderitem_set) {
-      return order.orderitem_set.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+      return order.orderitem_set.reduce(
+        (sum, item) => sum + (item.subtotal || 0),
+        0
+      );
     }
-    
+
     if (order.items) {
-      return order.items.reduce((sum, item) => sum + (item.base_price * item.quantity), 0);
+      return order.items.reduce(
+        (sum, item) => sum + item.base_price * item.quantity,
+        0
+      );
     }
-    
+
     return order.subtotal || 0;
   };
 
@@ -144,7 +150,7 @@ export default function OrderDetailsModal({
         phone: order.restaurant.phone,
       };
     }
-    
+
     return {
       name: order?.restaurant_name || "Restaurant",
       logo: order?.restaurant_logo || "https://via.placeholder.com/100",
@@ -161,7 +167,7 @@ export default function OrderDetailsModal({
         address: order.user.address,
       };
     }
-    
+
     return {
       name: order?.customer || "Customer",
       phone: order?.customer_phone || "Phone not available",
@@ -171,7 +177,7 @@ export default function OrderDetailsModal({
 
   const getOrderItems = () => {
     if (order?.orderitem_set) {
-      return order.orderitem_set.map(item => ({
+      return order.orderitem_set.map((item) => ({
         id: item.id,
         quantity: item.quantity,
         name: item.menu_item.name,
@@ -179,9 +185,9 @@ export default function OrderDetailsModal({
         subtotal: item.subtotal || item.menu_item.base_price * item.quantity,
       }));
     }
-    
+
     if (order?.items) {
-      return order.items.map(item => ({
+      return order.items.map((item) => ({
         id: item.id,
         quantity: item.quantity,
         name: item.name,
@@ -189,7 +195,7 @@ export default function OrderDetailsModal({
         subtotal: item.base_price * item.quantity,
       }));
     }
-    
+
     return [];
   };
 

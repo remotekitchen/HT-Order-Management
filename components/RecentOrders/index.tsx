@@ -1,7 +1,7 @@
 import { Search } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import OrderDetailsModal from "../OrderHistory/OrderDetailsModal";
+import { OrderDetailsModal } from "../OrderHistory/OrderDetailsModal";
 import FilterDropdown from "./FilterDropdown";
 import { useRecentOrders } from "./hooks";
 import OrderList from "./OrderList";

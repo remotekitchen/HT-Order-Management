@@ -1,3 +1,4 @@
+import { useGlobalSoundControl } from "@/utils/orderSoundManager";
 import {
   Clock,
   Grid3X3,
@@ -34,6 +35,7 @@ export default function Header({
   onStopSound,
 }: HeaderProps) {
   const scale = useSharedValue(1);
+  const { isPaused } = useGlobalSoundControl();
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -49,7 +51,7 @@ export default function Header({
 
   return (
     <View className="bg-white px-4 pt-4 border-b border-gray-100 shadow-sm">
-      {/* Sound Indicator */}
+      {/* Sound Status Indicators */}
       {isPlaying && (
         <View className="flex-row items-center justify-between mb-3 p-2 bg-orange-100 rounded-lg border border-orange-200">
           <View className="flex-row items-center">
@@ -69,6 +71,16 @@ export default function Header({
               <VolumeX size={16} color="#f97316" />
             </TouchableOpacity>
           )}
+        </View>
+      )}
+
+      {/* Sound Paused Indicator */}
+      {isPaused && (
+        <View className="flex-row items-center justify-center mb-3 p-2 bg-gray-100 rounded-lg border border-gray-200">
+          <VolumeX size={16} color="#6b7280" style={{ marginRight: 6 }} />
+          <Text className="text-gray-600 text-sm font-medium">
+            🔇 Order notification sound is paused
+          </Text>
         </View>
       )}
 
@@ -106,7 +118,9 @@ export default function Header({
                 color: activeTab === "incoming" ? "white" : "#374151",
               }}
             >
-              Incoming ({totalOrders})
+              {activeTab === "incoming"
+                ? `Incoming (${totalOrders})`
+                : "Incoming"}
             </Text>
           </View>
         </TouchableOpacity>
@@ -140,7 +154,7 @@ export default function Header({
                 textAlign: "center",
                 fontWeight: "600",
                 fontSize: 16,
-                color: activeTab === "recent" ? "white" : "#374151",
+                color: activeTab === "recent" ? "white" : "#6B7280",
               }}
             >
               Recent Orders
@@ -150,7 +164,7 @@ export default function Header({
       </View>
 
       {/* Layout Toggle - Only show for incoming tab */}
-      {activeTab === "incoming" && layoutType && onLayoutChange && (
+      {activeTab === "incoming" && onLayoutChange && (
         <View className="flex-row justify-end mb-3">
           <View className="flex-row bg-gray-100 rounded-lg p-1">
             <TouchableOpacity
