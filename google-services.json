@@ -1,0 +1,521 @@
+{
+  "project_info": {
+    "project_number": "290554369819",
+    "project_id": "chatchef-391108",
+    "storage_bucket": "chatchef-391108.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:3a21f8af57cc363531a5be",
+        "android_client_info": {
+          "package_name": "com.chatchef.bubble_world"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-93dspseakfo40hitl3p5686pccjmk4fs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.bubble_world",
+            "certificate_hash": "2482901d9c8185c31b5ed16f9200c7f9334f4c48"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:496eec14493828d931a5be",
+        "android_client_info": {
+          "package_name": "com.chatchef.chatchef_delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-6nue5obcp3l12p2uuao2snvc1ko0srd9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.chatchef_delivery",
+            "certificate_hash": "2482901d9c8185c31b5ed16f9200c7f9334f4c48"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:cf255a4aa9ef227331a5be",
+        "android_client_info": {
+          "package_name": "com.chatchef.leehouse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-go2iq0fb9fctvmnado1sac363n8mudj7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.leehouse",
+            "certificate_hash": "08fe163f8a6311c3904d7ff4d422f9e9ab41586e"
+          }
+        },
+        {
+          "client_id": "290554369819-ub341kv52tcsbbq6ve1i9hc5b89m7o27.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.leehouse",
+            "certificate_hash": "2482901d9c8185c31b5ed16f9200c7f9334f4c48"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:1bf9a12da7d52b1a31a5be",
+        "android_client_info": {
+          "package_name": "com.chatchef.oms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-01t9odv12gqohrn1809q27i6ih1ude8c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.oms",
+            "certificate_hash": "fb61fb67a54d99f04c938b0ea3c00e0fdfe2fad8"
+          }
+        },
+        {
+          "client_id": "290554369819-elkoj43p5gnsobhgtv2jii4to7195sum.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.oms",
+            "certificate_hash": "38e6952bc28a2d0320f461e13d9e220bd4240af7"
+          }
+        },
+        {
+          "client_id": "290554369819-vtno6kmfhll9p4q27g31hkdi7qvtj4ib.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.oms",
+            "certificate_hash": "6514b683127a4e42b442bdc27e2c7530dc0d6eb9"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:60ab2263dae2327431a5be",
+        "android_client_info": {
+          "package_name": "com.chatchef.omsbd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-337m9fa14aq47a2q4bh6ei8d3kte3r39.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchef.omsbd",
+            "certificate_hash": "999c5c02498de2d517aa6c17bf762066e912d07f"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:e187313748d5499831a5be",
+        "android_client_info": {
+          "package_name": "com.chatchefs.mealmingle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-o2ssvj6t9cm8oaekfmppn8guuuce5fcq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchefs.mealmingle",
+            "certificate_hash": "90dbcc9673e0e8caf9fc9490b97dd082288d97ba"
+          }
+        },
+        {
+          "client_id": "290554369819-qb1l9mlvp4jl0m5mgs703894fvh8hreg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatchefs.mealmingle",
+            "certificate_hash": "7fc3dd0ab55c80a45c53350bb9992eb36668fac9"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:221e79b6ac1f344431a5be",
+        "android_client_info": {
+          "package_name": "com.chatchefs.ordermanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        },
+        "firebase_messaging": {
+          "default_notification_channel_id": "high_importance_channel"
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:caead605efdbddbc31a5be",
+        "android_client_info": {
+          "package_name": "com.example.bubble_world"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-cnbepb3v0hnjmp0bjpvnri33vi2ou4jt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bubble_world",
+            "certificate_hash": "308b59a929b1e06d04c08f1d7d9d74141e7ca8be"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:1dc023c490453a5331a5be",
+        "android_client_info": {
+          "package_name": "com.example.chatchef_do"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-bfgohtsikvu4k252tt3pip3iekk9evnj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatchef_do",
+            "certificate_hash": "2482901d9c8185c31b5ed16f9200c7f9334f4c48"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:ad98aebbc74b9faa31a5be",
+        "android_client_info": {
+          "package_name": "com.example.lee_house"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290554369819:android:6920d6ac1c17671231a5be",
+        "android_client_info": {
+          "package_name": "com.lee_house.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290554369819-d0lpt2cf18majhgtf5vdtuc6v3q64ln5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lee_house.app",
+            "certificate_hash": "2728fa1f27a98316b7b7dd9f30fff93f3b0627e8"
+          }
+        },
+        {
+          "client_id": "290554369819-kndrinr4o24adurjhmabjum5tnkrbem4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lee_house.app",
+            "certificate_hash": "308b59a929b1e06d04c08f1d7d9d74141e7ca8be"
+          }
+        },
+        {
+          "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYnsYBYNAFRuqStVcGvgF1sanoV1kFoEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290554369819-ekvbdb8sggq1v0ngd4v5hn3vi724ml1q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290554369819-ilsq3lc7bc1tm7a8585l4jbu9b48jnr5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chatchefs.mealmingle"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

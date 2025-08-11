@@ -5,7 +5,9 @@ import {
   Headphones,
   List,
   Settings,
+  Volume2,
   X,
+  Zap,
 } from "lucide-react-native";
 import React, { useRef } from "react";
 import {
@@ -30,6 +32,13 @@ const menuItems = [
   { label: "Orders Overview", icon: List, key: "orders" },
   { label: "Recent Orders", icon: Clock, key: "recent" },
   { label: "Settings", icon: Settings, key: "settings" },
+  { label: "FCM Debugger", icon: Zap, key: "fcm" },
+  { label: "FCM Sound Tester", icon: Volume2, key: "fcm-sound" },
+  {
+    label: "Background Audio Tester",
+    icon: Headphones,
+    key: "background-audio",
+  },
 ];
 
 function finishClose(

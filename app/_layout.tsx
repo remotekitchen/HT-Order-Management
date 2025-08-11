@@ -11,7 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import * as Updates from "expo-updates";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import "nativewind";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -19,15 +19,24 @@ import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import OTAUpdateModal from "../components/OTAUpdateModal";
 import "../global.css";
-import { cleanupOrderSoundManager } from "../utils/orderSoundManager";
-import { registerForPushNotificationsAsync } from "../utils/registerForPushNotifications";
+import {
+  initializeBackgroundAudioService,
+  setupNotificationSoundService,
+} from "../utils/backgroundAudioService";
+import {
+  checkFCMStatus,
+  registerForPushNotificationsAsync,
+} from "../utils/fcm";
+import {
+  cleanupOrderSoundManager,
+  wasOrderSoundTriggered,
+} from "../utils/orderSoundManager";
 import Home from "./home";
 import HomeScreen from "./index";
 
 // Import for order sound functionality
 import { useGetIncomingOrdersQuery } from "@/redux/feature/order/orderApi";
 import { useAudioPlayer } from "expo-audio";
-import { useRef } from "react";
 import { subscribeToSoundPauseState } from "../utils/orderSoundManager";
 
 const theme = extendTheme({});
@@ -64,18 +73,49 @@ export default function RootLayout() {
   };
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        // TODO: send token to your backend for this user/restaurant
-        // await fetch('/api/save-token', { method: 'POST', body: JSON.stringify({ token }) });
+    // ✅ Enhanced FCM registration with better error handling and logging
+    console.log("🚀 App starting - initiating FCM setup...");
+
+    const setupFCM = async () => {
+      try {
+        // First check current FCM status
+        await checkFCMStatus();
+
+        // Then attempt to register and get token
+        const token = await registerForPushNotificationsAsync();
+
+        if (token) {
+          // TODO: send token to your backend for this user/restaurant
+          // await fetch('/api/save-token', { method: 'POST', body: JSON.stringify({ token }) });
+          console.log("✅ FCM token ready:", token);
+          console.log("🔑 Full FCM token for backend:", token);
+        } else {
+          console.warn("⚠️ FCM token not received");
+        }
+      } catch (error) {
+        console.error("❌ FCM setup error:", error);
       }
-    });
+    };
+
+    // Initialize background audio system
+    const setupAudio = async () => {
+      try {
+        console.log("🎵 Setting up background audio system...");
+        await initializeBackgroundAudioService();
+        await setupNotificationSoundService();
+        console.log("✅ Background audio system ready");
+      } catch (error) {
+        console.error("❌ Background audio setup error:", error);
+      }
+    };
+
+    setupFCM();
+    setupAudio();
 
     // Handle notification response (when user taps notification)
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
-        // This will bring the app to the foreground automatically
-        // You can add navigation logic here if you want to deep link
+        // Add navigation logic here if you want to deep link
       }
     );
 
@@ -168,8 +208,18 @@ function GlobalOrderSoundListener() {
     );
     const hasPending = pendingOrders.length > 0;
 
-    // Only play sound if there are pending orders AND sound is not paused
-    if (hasPending && !isPaused && !intervalRef.current) {
+    // Check if sound was triggered by FCM notification
+    const fcmTriggered = wasOrderSoundTriggered();
+
+    // Play sound if: pending orders exist OR FCM triggered the sound, AND sound is not paused
+    if ((hasPending || fcmTriggered) && !isPaused && !intervalRef.current) {
+      console.log(
+        "🎵 Starting order sound - Pending orders:",
+        hasPending,
+        "FCM triggered:",
+        fcmTriggered
+      );
+
       // Start looping sound
       (async () => {
         try {
@@ -183,12 +233,18 @@ function GlobalOrderSoundListener() {
           await player.play();
         } catch (e) {}
       }, 2000); // Play every 2 seconds (adjust to match your sound length)
-    } else if ((!hasPending || isPaused) && intervalRef.current) {
-      // Stop looping sound if no pending orders OR sound is paused
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-      player.pause();
+    } else if ((!hasPending && !fcmTriggered) || isPaused) {
+      // Stop looping sound if no pending orders AND no FCM trigger, OR sound is paused
+      if (intervalRef.current) {
+        console.log(
+          "🎵 Stopping order sound - No pending orders and no FCM trigger"
+        );
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        player.pause();
+      }
     }
+
     // Cleanup on unmount
     return () => {
       if (intervalRef.current) {

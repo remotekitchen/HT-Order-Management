@@ -11,14 +11,14 @@
     "ios": {
       "bundleIdentifier": "com.chatchefs.ordermanagement",
       "supportsTablet": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
       }
     },
     "android": {
       "package": "com.chatchefs.ordermanagement",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/main_icon_300x300.png",
         "backgroundColor": "#ffffff"
@@ -32,7 +32,22 @@
         "FOREGROUND_SERVICE",
         "WAKE_LOCK",
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "notificationSounds": {
+        "order_sound": "./assets/sound/order_sound.mp3"
+      },
+      "notificationChannels": [
+        {
+          "id": "high_importance_channel",
+          "name": "High Importance Notifications",
+          "description": "Channel for important order notifications",
+          "importance": "high",
+          "sound": "order_sound",
+          "vibration": true,
+          "lights": true
+        }
       ]
     },
     "web": {
@@ -56,7 +71,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "experiments": {
       "typedRoutes": true

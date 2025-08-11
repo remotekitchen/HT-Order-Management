@@ -107,10 +107,6 @@ export const useRecentOrders = () => {
     }
 
     // Debug: Log the first order to see the structure
-    console.log(
-      "First order structure:",
-      JSON.stringify(ordersArray[0], null, 2)
-    );
 
     return ordersArray.map((apiOrder: any) => {
       return {

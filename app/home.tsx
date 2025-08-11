@@ -1,3 +1,6 @@
+import BackgroundAudioTester from "@/components/BackgroundAudioTester";
+import FCMDebugger from "@/components/FCMDebugger";
+import FCMSoundTester from "@/components/FCMSoundTester";
 import OrderHistoryComponent from "@/components/OrderHistory";
 import RecentOrders from "@/components/RecentOrders";
 import SettingsPage from "@/components/SettingsPage";
@@ -21,6 +24,10 @@ export default function Home() {
   if (activeSection === "orders") SectionComponent = <OrderHistoryComponent />;
   if (activeSection === "recent") SectionComponent = <RecentOrders />;
   if (activeSection === "settings") SectionComponent = <SettingsPage />;
+  if (activeSection === "fcm") SectionComponent = <FCMDebugger />;
+  if (activeSection === "fcm-sound") SectionComponent = <FCMSoundTester />;
+  if (activeSection === "background-audio")
+    SectionComponent = <BackgroundAudioTester />;
 
   return (
     <View className="flex-1 bg-white relative">
