@@ -1,66 +1,21 @@
 import { useEffect, useState } from "react";
 
-// Placeholder for order sound manager
-// Audio functionality removed due to React Native compatibility issues
-
 interface Order {
   id: number;
   status: string;
   [key: string]: any;
 }
 
-class OrderSoundManager {
-  private isPlaying = false;
-  private shouldPlay = false;
-  private pendingOrdersCount = 0;
+// Simple utility functions for order sound management
+export const getPendingOrdersCount = (orders: Order[]) => {
+  return orders.filter((order) => order.status === "pending").length;
+};
 
-  constructor() {
-    // No audio initialization
-  }
+export const shouldPlaySound = (orders: Order[]) => {
+  return getPendingOrdersCount(orders) > 0;
+};
 
-  public updatePendingOrders(orders: Order[]) {
-    const newPendingCount = orders.filter(
-      (order) => order.status === "pending"
-    ).length;
-
-    if (newPendingCount !== this.pendingOrdersCount) {
-      this.pendingOrdersCount = newPendingCount;
-      this.shouldPlay = newPendingCount > 0;
-    }
-  }
-
-  public async startSound() {
-    // Audio functionality removed
-    console.log("Audio functionality not available in React Native");
-  }
-
-  public async testSound() {
-    // Audio functionality removed
-    console.log("Audio functionality not available in React Native");
-  }
-
-  public async stopSound() {
-    // Audio functionality removed
-    console.log("Audio functionality not available in React Native");
-  }
-
-  public async cleanup() {
-    // No cleanup needed
-  }
-
-  public getStatus() {
-    return {
-      isPlaying: this.isPlaying,
-      shouldPlay: this.shouldPlay,
-      pendingOrdersCount: this.pendingOrdersCount,
-    };
-  }
-}
-
-// Create a singleton instance
-const orderSoundManager = new OrderSoundManager();
-
-// React hook for using the sound manager
+// React hook for using the sound manager with expo-audio
 export const useOrderSoundManager = (orders: Order[]) => {
   const [soundStatus, setSoundStatus] = useState({
     isPlaying: false,
@@ -69,25 +24,25 @@ export const useOrderSoundManager = (orders: Order[]) => {
   });
 
   useEffect(() => {
-    // Update the sound manager with current orders
-    orderSoundManager.updatePendingOrders(orders);
+    const pendingCount = getPendingOrdersCount(orders);
+    const shouldPlay = pendingCount > 0;
 
-    // Update local state
-    setSoundStatus(orderSoundManager.getStatus());
+    setSoundStatus({
+      isPlaying: false, // This will be managed by the audio player
+      shouldPlay,
+      pendingOrdersCount: pendingCount,
+    });
   }, [orders]);
 
   return {
     ...soundStatus,
-    stopSound: () => orderSoundManager.stopSound(),
-    startSound: () => orderSoundManager.startSound(),
-    testSound: () => orderSoundManager.testSound(),
+    stopSound: () => {}, // Will be implemented by the audio player
+    startSound: () => {}, // Will be implemented by the audio player
+    testSound: () => {}, // Will be implemented by the audio player
   };
 };
 
-// Export the manager instance for direct use if needed
-export { orderSoundManager };
-
 // Export cleanup function for app lifecycle management
 export const cleanupOrderSoundManager = () => {
-  orderSoundManager.cleanup();
+  // No cleanup needed for this simple approach
 };

@@ -23,6 +23,12 @@ import { cleanupOrderSoundManager } from "../utils/orderSoundManager";
 import { registerForPushNotificationsAsync } from "../utils/registerForPushNotifications";
 import Home from "./home";
 import HomeScreen from "./index";
+
+// Import for order sound functionality
+import { useGetIncomingOrdersQuery } from "@/redux/feature/order/orderApi";
+import { useAudioPlayer } from "expo-audio";
+import { useRef } from "react";
+
 const theme = extendTheme({});
 
 function AuthGate() {
@@ -121,7 +127,9 @@ export default function RootLayout() {
         <NativeBaseProvider theme={theme}>
           <Provider store={store}>
             <StatusBar style="auto" translucent />
-
+            {/* --- Global order sound logic start --- */}
+            <GlobalOrderSoundListener />
+            {/* --- Global order sound logic end --- */}
             <AuthGate />
             <Toast />
             <OTAUpdateModal
@@ -133,4 +141,54 @@ export default function RootLayout() {
       </View>
     </SafeAreaProvider>
   );
+}
+
+// Move the global order sound logic into a child component so it is inside the Provider
+function GlobalOrderSoundListener() {
+  const { data: incomingOrdersData } = useGetIncomingOrdersQuery(undefined, {
+    pollingInterval: 5000, // Poll every 5 seconds
+  });
+  const player = useAudioPlayer(require("../assets/sound/order_sound.mp3"));
+  const intervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Extract orders from the API response
+    // The API returns { orders: [...], date_range: {...}, total: number }
+    const orders = (incomingOrdersData as any)?.orders || [];
+    const pendingOrders = orders.filter(
+      (order: any) => order.status === "pending"
+    );
+    const hasPending = pendingOrders.length > 0;
+
+    if (hasPending && !intervalRef.current) {
+      // Start looping sound
+      (async () => {
+        try {
+          await player.seekTo(0);
+          await player.play();
+        } catch (e) {}
+      })();
+      intervalRef.current = setInterval(async () => {
+        try {
+          await player.seekTo(0);
+          await player.play();
+        } catch (e) {}
+      }, 2000); // Play every 2 seconds (adjust to match your sound length)
+    } else if (!hasPending && intervalRef.current) {
+      // Stop looping sound
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      player.pause();
+    }
+    // Cleanup on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      player.pause();
+    };
+  }, [incomingOrdersData, player]);
+
+  return null;
 }

@@ -20,9 +20,7 @@ export default function OrderItem({ order }: { order: Order }) {
         <Text className="text-lg font-bold">
           {formatTime(order.created_date)}
         </Text>
-        <Text className="text-gray-500">
-          #{order.id} {order.order_id}
-        </Text>
+        <Text className="text-gray-500">#{order.order_id}</Text>
         <View className="flex-row items-center mt-1">
           <User size={16} color="#222" className="mr-1" />
           <Text className="text-gray-500">{order.customer}</Text>

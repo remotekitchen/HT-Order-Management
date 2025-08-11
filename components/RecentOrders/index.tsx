@@ -1,11 +1,12 @@
-import { useGetOrderHistoryQuery } from "@/redux/feature/order/orderApi";
 import { Search } from "lucide-react-native";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
+import OrderDetailsModal from "../OrderHistory/OrderDetailsModal";
 import FilterDropdown from "./FilterDropdown";
 import { useRecentOrders } from "./hooks";
 import OrderList from "./OrderList";
 import Tabs from "./Tabs";
+import { Order } from "./types";
 
 function SkeletonLoader() {
   return (
@@ -30,9 +31,8 @@ function SkeletonLoader() {
 export default function RecentOrders() {
   const {
     orders,
-    orderCounts,
-    // isLoading,
-    // error,
+    isLoading,
+    error,
     dateFilter,
     setDateFilter,
     filter,
@@ -40,10 +40,10 @@ export default function RecentOrders() {
     refetch,
   } = useRecentOrders();
 
-  const { data: RecentOrders, isLoading, error } = useGetOrderHistoryQuery();
-
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const filteredOrders = orders.filter(
     (order: any) =>
@@ -57,6 +57,16 @@ export default function RecentOrders() {
       await refetch();
     } catch {}
     setRefreshing(false);
+  };
+
+  const handleOrderPress = (order: Order) => {
+    setSelectedOrder(order);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedOrder(null);
   };
 
   // Calculate completed orders and total amount
@@ -105,11 +115,7 @@ export default function RecentOrders() {
             onChangeText={setSearch}
           />
         </View>
-        <FilterDropdown
-          filter={filter}
-          setFilter={setFilter}
-          orderCounts={orderCounts}
-        />
+        <FilterDropdown filter={filter} setFilter={setFilter} />
         {/* Completed summary row */}
         <View className="flex-row items-center mt-4 mb-2">
           <Text className="text-base font-semibold text-gray-700">
@@ -127,9 +133,16 @@ export default function RecentOrders() {
       </View>
       <OrderList
         orders={filteredOrders}
-        onOrderPress={() => {}} // Empty function since we're removing modal functionality
+        onOrderPress={handleOrderPress}
         refreshing={refreshing}
         onRefresh={onRefresh}
+      />
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        visible={isModalVisible}
+        order={selectedOrder}
+        onClose={closeModal}
       />
     </View>
   );

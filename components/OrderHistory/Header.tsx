@@ -143,7 +143,7 @@ export default function Header({
                 color: activeTab === "recent" ? "white" : "#374151",
               }}
             >
-              Recent Orders (0)
+              Recent Orders
             </Text>
           </View>
         </TouchableOpacity>

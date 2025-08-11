@@ -10,9 +10,9 @@ export const orderApi = apiSlice.injectEndpoints({
       }),
       providesTags: ["ORDERS"],
     }),
-    getOrderHistory: builder.query<any[], void>({
-      query: () => ({
-        url: "api/billing/v1/get-orders/",
+    getOrderHistory: builder.query<any[], [string, string]>({
+      query: ([start_date, end_date]) => ({
+        url: `api/billing/v1/get-orders/?date=custom&start_date=${start_date}&end_date=${end_date}`,
         method: "GET",
       }),
       providesTags: ["ORDERS"],

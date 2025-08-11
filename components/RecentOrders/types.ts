@@ -10,6 +10,15 @@ export interface Order {
   discount: number;
   payment_method: string;
   checkout_note: string;
+  // Restaurant info
+  restaurant_name?: string;
+  restaurant_logo?: string;
+  restaurant_address?: string;
+  restaurant_phone?: string;
+  // Customer details
+  customer_phone?: string;
+  customer_address?: string;
+  // Order items
   orderitem_set: {
     id: number;
     quantity: number;

@@ -21,7 +21,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { OrderHistory } from "./types";
 
 const { height: screenHeight } = Dimensions.get("window");
 

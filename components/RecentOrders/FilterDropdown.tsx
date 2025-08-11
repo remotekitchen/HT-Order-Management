@@ -6,12 +6,6 @@ import { FilterType } from "./types";
 interface FilterDropdownProps {
   filter: FilterType;
   setFilter: (filter: FilterType) => void;
-  orderCounts: {
-    all: number;
-    ongoing: number;
-    completed: number;
-    cancelled: number;
-  };
 }
 
 const filterOptions: { label: string; value: FilterType }[] = [
@@ -24,7 +18,6 @@ const filterOptions: { label: string; value: FilterType }[] = [
 export default function FilterDropdown({
   filter,
   setFilter,
-  orderCounts,
 }: FilterDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -47,9 +40,7 @@ export default function FilterDropdown({
         className="flex-row items-center justify-between p-4 bg-gray-100 rounded-lg"
         onPress={toggleDropdown}
       >
-        <Text className="text-lg font-bold">
-          {selectedLabel} {orderCounts[filter]}
-        </Text>
+        <Text className="text-lg font-bold">{selectedLabel}</Text>
         <ChevronDown
           size={20}
           color="black"
@@ -64,9 +55,7 @@ export default function FilterDropdown({
               className="p-4 border-b border-gray-200"
               onPress={() => handleSelect(option.value)}
             >
-              <Text className="text-base">
-                {option.label} {orderCounts[option.value]}
-              </Text>
+              <Text className="text-base">{option.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
