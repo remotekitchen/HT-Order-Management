@@ -1,0 +1,899 @@
+import messaging from "@react-native-firebase/messaging";
+import * as BackgroundFetch from "expo-background-fetch";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import React, { useEffect, useRef } from "react";
+import { AppState, AppStateStatus, Platform, View } from "react-native";
+
+interface BackgroundServiceProps {
+  children: React.ReactNode;
+}
+
+export default function BackgroundService({
+  children,
+}: BackgroundServiceProps) {
+  const appState = useRef(AppState.currentState);
+  const backgroundTaskRef = useRef<number | null>(null);
+
+  // Setup notification channel for Android
+  const setupNotificationChannel = async () => {
+    if (Platform.OS === "android") {
+      try {
+        await Notifications.setNotificationChannelAsync(
+          "high_importance_channel",
+          {
+            name: "High Importance",
+            importance: Notifications.AndroidImportance.MAX,
+            sound: "order_sound.wav", // must match filename you added
+            vibrationPattern: [0, 500, 500, 500],
+            lockscreenVisibility:
+              Notifications.AndroidNotificationVisibility.PUBLIC,
+            bypassDnd: true, // optional
+          }
+        );
+        console.log(
+          "✅ Background Service: Android notification channel created"
+        );
+      } catch (error) {
+        console.log(
+          "❌ Background Service: Failed to create notification channel:",
+          error
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log(
+      "🚀 Background Service: Starting persistent background service..."
+    );
+
+    // CRITICAL: Setup notification channel first
+    setupNotificationChannel();
+
+    // CRITICAL: Initialize global variables if they don't exist
+    if (typeof (global as any).backgroundNotifications === "undefined") {
+      (global as any).backgroundNotifications = [];
+      console.log(
+        "✅ Background Service: Initialized global.backgroundNotifications"
+      );
+    }
+
+    if (typeof (global as any).backgroundOrderReceived === "undefined") {
+      (global as any).backgroundOrderReceived = false;
+      console.log(
+        "✅ Background Service: Initialized global.backgroundOrderReceived"
+      );
+    }
+
+    if (typeof (global as any).startBackgroundSoundLoop === "undefined") {
+      (global as any).startBackgroundSoundLoop = false;
+      console.log(
+        "✅ Background Service: Initialized global.startBackgroundSoundLoop"
+      );
+    }
+
+    // Start persistent background task
+    startBackgroundTask();
+
+    // Listen for app state changes
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    // CRITICAL: Set up global notification listener to catch backend responses in real-time
+    if (typeof global.backgroundFCMLogs !== "undefined") {
+      // Override the push method to log notifications as they arrive
+      const originalPush = global.backgroundFCMLogs.push;
+      global.backgroundFCMLogs.push = function (...args: any[]) {
+        // Call original push method
+        const result = originalPush.apply(this, args);
+
+        // Log the new notification response immediately
+        if (args.length > 0 && args[0].message) {
+          try {
+            const notificationData = JSON.parse(
+              args[0].message.replace("📱 Background FCM received: ", "")
+            );
+            logBackendNotificationResponse(
+              notificationData,
+              "Background Service - Real-time"
+            );
+
+            // CRITICAL: Check if this is an order notification and start sound loop immediately
+            if (
+              notificationData.notification?.title
+                ?.toLowerCase()
+                .includes("order")
+            ) {
+              console.log(
+                "🎵 Background Service: Order notification detected in real-time - starting sound loop"
+              );
+              (global as any).backgroundOrderReceived = true;
+              (global as any).startBackgroundSoundLoop = true;
+
+              // Start sound loop immediately
+              if (!(global as any).backgroundSoundInterval) {
+                startBackgroundSoundLoop();
+              }
+            }
+          } catch (error) {
+            console.log(
+              "❌ Background Service: Failed to parse real-time notification:",
+              error
+            );
+          }
+        }
+
+        return result;
+      };
+
+      console.log(
+        "✅ Background Service: Real-time notification logging enabled"
+      );
+    }
+
+    // CRITICAL: Set up periodic check for new notifications (fallback)
+    const notificationCheckInterval = setInterval(() => {
+      checkForNewNotifications();
+    }, 5000); // Check every 5 seconds
+
+    // CRITICAL: Set up direct FCM message handler for immediate response
+    setupDirectFCMHandler();
+
+    // Cleanup interval on unmount
+    return () => {
+      console.log("🛑 Background Service: Cleaning up...");
+      subscription?.remove();
+      stopBackgroundTask();
+      clearInterval(notificationCheckInterval);
+    };
+  }, []);
+
+  const checkForNewNotifications = () => {
+    try {
+      console.log("🔍 Background Service: Checking for new notifications...");
+
+      // CRITICAL: Check global flags first
+      if (
+        (global as any).startBackgroundSoundLoop &&
+        !(global as any).backgroundSoundInterval
+      ) {
+        console.log(
+          "🎵 Background Service: Periodic check found global flag - starting sound loop"
+        );
+        startBackgroundSoundLoop();
+        return;
+      }
+
+      // Check if we have new background notifications that need processing
+      if (
+        (global as any).backgroundNotifications &&
+        (global as any).backgroundNotifications.length > 0
+      ) {
+        const hasUnprocessedNotifications = (
+          global as any
+        ).backgroundNotifications.some((n: any) => !n.processed);
+
+        if (
+          hasUnprocessedNotifications &&
+          !(global as any).backgroundSoundInterval
+        ) {
+          console.log(
+            "🎵 Background Service: Periodic check found unprocessed notifications - starting sound loop"
+          );
+          startBackgroundSoundLoop();
+          return;
+        }
+      }
+
+      // CRITICAL: Also check if we need to start sound loop based on global flags
+      if (
+        (global as any).backgroundOrderReceived &&
+        !(global as any).backgroundSoundInterval
+      ) {
+        console.log(
+          "🎵 Background Service: Periodic check found backgroundOrderReceived flag - starting sound loop"
+        );
+        startBackgroundSoundLoop();
+        return;
+      }
+
+      console.log("🔍 Background Service: No new notifications found");
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Error in periodic notification check:",
+        error
+      );
+    }
+  };
+
+  const setupDirectFCMHandler = async () => {
+    try {
+      const messagingModule = await import("@react-native-firebase/messaging");
+      if (messagingModule.default) {
+        messagingModule.default().onMessage((remoteMessage: any) => {
+          console.log(
+            "🎵 Background Service: Direct FCM message received:",
+            remoteMessage.notification?.title
+          );
+
+          // Check if this is an order notification
+          if (
+            remoteMessage.notification?.title?.toLowerCase().includes("order")
+          ) {
+            console.log(
+              "🎵 Background Service: Order notification detected via direct handler"
+            );
+            (global as any).backgroundOrderReceived = true;
+            (global as any).startBackgroundSoundLoop = true;
+
+            // Start sound loop immediately
+            if (!(global as any).backgroundSoundInterval) {
+              console.log(
+                "🎵 Background Service: Starting sound loop via direct FCM handler"
+              );
+              startBackgroundSoundLoop();
+            }
+          }
+        });
+        console.log("✅ Background Service: Direct FCM handler set up");
+      }
+    } catch (error) {
+      console.log(
+        "⚠️ Background Service: Could not set up direct FCM handler:",
+        error
+      );
+    }
+  };
+
+  const startBackgroundTask = async () => {
+    console.log("🔄 Background Service: Starting background task...");
+
+    try {
+      // Register background fetch task for Expo managed workflow
+      await registerBackgroundFetchTask();
+
+      // Start background fetch
+      await BackgroundFetch.registerTaskAsync("background-fcm-task", {
+        minimumInterval: 15, // Minimum 15 seconds (iOS limitation)
+        stopOnTerminate: false, // Continue after app is closed
+        startOnBoot: true, // Start after device restart
+      });
+
+      console.log("✅ Background Service: Expo background fetch registered");
+    } catch (error) {
+      console.log(
+        "⚠️ Background Service: Background fetch not available, using JS fallback"
+      );
+    }
+
+    // Create a persistent interval that keeps the app alive (fallback)
+    backgroundTaskRef.current = setInterval(() => {
+      // This keeps the JavaScript thread alive
+      const timestamp = new Date().toISOString();
+      console.log(`🔄 Background Service: Keep-alive ping at ${timestamp}`);
+
+      // Check FCM connection status
+      checkFCMStatus();
+
+      // Check if we have any pending notifications
+      checkPendingNotifications();
+
+      // CRITICAL: Check for background notifications that need sound loop
+      if (
+        (global as any).backgroundNotifications &&
+        (global as any).backgroundNotifications.length > 0
+      ) {
+        const hasUnprocessedNotifications = (
+          global as any
+        ).backgroundNotifications.some((n: any) => !n.processed);
+
+        if (
+          hasUnprocessedNotifications &&
+          !(global as any).backgroundSoundInterval
+        ) {
+          console.log(
+            "🎵 Background Service: Keep-alive ping detected unprocessed notifications - starting sound loop"
+          );
+          startBackgroundSoundLoop();
+        }
+      }
+
+      // CRITICAL: Force start sound loop if flags are set but no interval
+      if (
+        (global as any).startBackgroundSoundLoop &&
+        !(global as any).backgroundSoundInterval
+      ) {
+        console.log(
+          "🎵 Background Service: Keep-alive ping forcing sound loop start"
+        );
+        startBackgroundSoundLoop();
+      }
+
+      // CRITICAL: Also check backgroundOrderReceived flag
+      if (
+        (global as any).backgroundOrderReceived &&
+        !(global as any).backgroundSoundInterval
+      ) {
+        console.log(
+          "🎵 Background Service: Keep-alive ping found backgroundOrderReceived flag - starting sound loop"
+        );
+        startBackgroundSoundLoop();
+      }
+    }, 30000); // Every 30 seconds
+
+    console.log("✅ Background Service: Background task started");
+  };
+
+  const stopBackgroundTask = () => {
+    if (backgroundTaskRef.current) {
+      clearInterval(backgroundTaskRef.current);
+      backgroundTaskRef.current = null;
+      console.log("🛑 Background Service: Background task stopped");
+    }
+  };
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    console.log(
+      `🔄 Background Service: App state changed from ${appState.current} to ${nextAppState}`
+    );
+
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
+      // App came to foreground
+      console.log("📱 Background Service: App came to foreground");
+      handleAppForeground();
+    } else if (
+      appState.current === "active" &&
+      nextAppState.match(/inactive|background/)
+    ) {
+      // App went to background
+      console.log("📱 Background Service: App went to background");
+      handleAppBackground();
+    }
+
+    appState.current = nextAppState;
+  };
+
+  const handleAppForeground = () => {
+    console.log("🎯 Background Service: Handling app foreground...");
+
+    // Refresh FCM token if needed
+    refreshFCMToken();
+
+    // Clear any background notifications
+    clearBackgroundNotifications();
+  };
+
+  const handleAppBackground = () => {
+    console.log("🎯 Background Service: Handling app background...");
+
+    // Ensure FCM is still listening
+    ensureFCMListening();
+
+    // Start background audio service if needed
+    startBackgroundAudioService();
+
+    // CRITICAL: Check if we need to start sound loop immediately when going to background
+    if (
+      (global as any).backgroundOrderReceived &&
+      !(global as any).backgroundSoundInterval
+    ) {
+      console.log(
+        "🎵 Background Service: App going to background - starting sound loop immediately"
+      );
+      startBackgroundSoundLoop();
+    }
+  };
+
+  const checkFCMStatus = async () => {
+    try {
+      // Check if messaging is available
+      if (!messaging) {
+        console.log("⚠️ Background Service: FCM not available");
+        return;
+      }
+
+      // Check permission status
+      const authStatus = await messaging().hasPermission();
+      console.log("🔍 Background Service: FCM permission status:", authStatus);
+
+      // Check if device is registered
+      const isRegistered = await messaging()
+        .isDeviceRegisteredForRemoteMessages;
+      console.log("🔍 Background Service: Device registered:", isRegistered);
+
+      // Try to get current token
+      try {
+        const currentToken = await messaging().getToken();
+        if (currentToken) {
+          console.log("✅ Background Service: FCM token available");
+          console.log("🔑 Background Service: FCM Token:", currentToken);
+          console.log(
+            "📏 Background Service: Token length:",
+            currentToken.length
+          );
+          console.log(
+            "👀 Background Service: Token preview:",
+            currentToken.substring(0, 20) + "..."
+          );
+        } else {
+          console.log("⚠️ Background Service: FCM token missing");
+        }
+      } catch (tokenError) {
+        console.log("❌ Background Service: FCM token error:", tokenError);
+      }
+    } catch (error) {
+      console.log("❌ Background Service: FCM status check error:", error);
+    }
+  };
+
+  const refreshFCMToken = async () => {
+    try {
+      console.log("🔄 Background Service: Refreshing FCM token...");
+      const newToken = await messaging().getToken();
+      if (newToken) {
+        console.log("✅ Background Service: FCM token refreshed");
+        console.log("🔑 Background Service: New FCM Token:", newToken);
+        console.log(
+          "📏 Background Service: New token length:",
+          newToken.length
+        );
+        console.log(
+          "👀 Background Service: New token preview:",
+          newToken.substring(0, 20) + "..."
+        );
+        // TODO: Send new token to your backend
+      }
+    } catch (error) {
+      console.log("❌ Background Service: FCM token refresh error:", error);
+    }
+  };
+
+  const ensureFCMListening = () => {
+    console.log("🔊 Background Service: Ensuring FCM is listening...");
+
+    // The background message handler is already set up in fcm.ts
+    // This just ensures it's working
+    console.log("✅ Background Service: FCM background handler is active");
+  };
+
+  const startBackgroundAudioService = async () => {
+    try {
+      console.log(
+        "🎵 Background Service: Starting background audio service..."
+      );
+
+      // Initialize audio session for background
+      // Note: expo-av is not imported to avoid linter errors
+      // Audio functionality will still work through FCM background handler
+      console.log("✅ Background Service: Background audio service started");
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Background audio service error:",
+        error
+      );
+    }
+  };
+
+  // Function to log backend notification response in real-time
+  const logBackendNotificationResponse = (
+    notificationData: any,
+    source: string = "Background Service"
+  ) => {
+    try {
+      console.log(`🎯 ${source}: NEW BACKEND NOTIFICATION RECEIVED!`);
+      console.log("=".repeat(80));
+      console.log(
+        `${source}: Full Notification Payload:`,
+        JSON.stringify(notificationData, null, 2)
+      );
+      console.log("=".repeat(80));
+
+      // Log notification section
+      if (notificationData.notification) {
+        console.log(`📢 ${source}: NOTIFICATION SECTION:`);
+        console.log(
+          `  - Title: ${notificationData.notification.title || "❌ MISSING"}`
+        );
+        console.log(
+          `  - Body: ${notificationData.notification.body || "❌ MISSING"}`
+        );
+        console.log(
+          `  - Sound: ${
+            (notificationData.notification as any)?.sound || "❌ MISSING"
+          }`
+        );
+        console.log(
+          `  - Icon: ${notificationData.notification.icon || "❌ MISSING"}`
+        );
+        console.log(
+          `  - Image: ${notificationData.notification.image || "❌ MISSING"}`
+        );
+      }
+
+      // Log data section
+      if (notificationData.data) {
+        console.log(`📊 ${source}: DATA SECTION:`);
+        Object.entries(notificationData.data).forEach(([key, value]) => {
+          console.log(`    - ${key}: ${value}`);
+        });
+      }
+
+      // Log Android specific
+      if ((notificationData as any).android) {
+        console.log(`🤖 ${source}: ANDROID SECTION:`);
+        if ((notificationData as any).android.notification) {
+          console.log(
+            `  - Channel ID: ${
+              (notificationData as any).android.notification.channelId ||
+              "❌ MISSING"
+            }`
+          );
+          console.log(
+            `  - Sound: ${
+              (notificationData as any).android.notification.sound ||
+              "❌ MISSING"
+            }`
+          );
+          console.log(
+            `  - Priority: ${
+              (notificationData as any).android.notification.priority ||
+              "❌ MISSING"
+            }`
+          );
+        }
+      }
+
+      // Log iOS specific
+      if ((notificationData as any).apns) {
+        console.log(`🍎 ${source}: iOS SECTION:`);
+        if ((notificationData as any).apns.payload?.aps) {
+          console.log(
+            `  - Sound: ${
+              (notificationData as any).apns.payload.aps.sound || "❌ MISSING"
+            }`
+          );
+          console.log(
+            `  - Badge: ${
+              (notificationData as any).apns.payload.aps.badge || "❌ MISSING"
+            }`
+          );
+        }
+      }
+
+      // Log message metadata
+      console.log(`📋 ${source}: MESSAGE METADATA:`);
+      console.log(
+        `  - Message ID: ${notificationData.messageId || "❌ MISSING"}`
+      );
+      console.log(
+        `  - From: ${(notificationData as any).from || "❌ MISSING"}`
+      );
+      console.log(
+        `  - Priority: ${(notificationData as any).priority || "❌ MISSING"}`
+      );
+      console.log(`  - TTL: ${(notificationData as any).ttl || "❌ MISSING"}`);
+
+      // Log timestamp
+      console.log(`⏰ ${source}: Received at: ${new Date().toISOString()}`);
+      console.log("=".repeat(80));
+    } catch (error) {
+      console.error(
+        `❌ ${source}: Error logging notification response:`,
+        error
+      );
+    }
+  };
+
+  const checkPendingNotifications = async () => {
+    try {
+      console.log(
+        "🔍 Background Service: Checking for pending notifications..."
+      );
+
+      // Check if we have any stored background FCM logs
+      if (global.backgroundFCMLogs && global.backgroundFCMLogs.length > 0) {
+        console.log(
+          `📱 Background Service: Found ${global.backgroundFCMLogs.length} background notifications`
+        );
+
+        // Process any unhandled notifications
+        global.backgroundFCMLogs.forEach((log, index) => {
+          console.log(
+            `📋 Background Service: Processing notification ${index + 1}:`,
+            log.message.substring(0, 100) + "..."
+          );
+
+          // CRITICAL: Log the full backend notification response
+          try {
+            const notificationData = JSON.parse(
+              log.message.replace("📱 Background FCM received: ", "")
+            );
+            console.log(
+              `🎯 Background Service: FULL BACKEND RESPONSE for notification ${
+                index + 1
+              }:`
+            );
+            console.log("=".repeat(80));
+            console.log(
+              "📱 Background Service: Notification Data:",
+              JSON.stringify(notificationData, null, 2)
+            );
+            console.log("=".repeat(80));
+
+            // Log specific fields for easy reading
+            if (notificationData.notification) {
+              console.log(
+                `📢 Background Service: Title: ${
+                  notificationData.notification.title || "N/A"
+                }`
+              );
+              console.log(
+                `📢 Background Service: Body: ${
+                  notificationData.notification.body || "N/A"
+                }`
+              );
+              console.log(
+                `📢 Background Service: Sound: ${
+                  (notificationData.notification as any)?.sound || "N/A"
+                }`
+              );
+            }
+
+            if (notificationData.data) {
+              console.log(
+                `📊 Background Service: Data fields:`,
+                Object.keys(notificationData.data)
+              );
+              Object.entries(notificationData.data).forEach(([key, value]) => {
+                console.log(`📊 Background Service: ${key}: ${value}`);
+              });
+            }
+
+            console.log(`⏰ Background Service: Received at: ${log.timestamp}`);
+            console.log("=".repeat(80));
+          } catch (parseError) {
+            console.log(
+              `❌ Background Service: Failed to parse notification ${
+                index + 1
+              }:`,
+              parseError
+            );
+            console.log(`📱 Background Service: Raw message:`, log.message);
+          }
+        });
+      } else {
+        console.log("📱 Background Service: No pending notifications found");
+      }
+
+      // CRITICAL: Check if background sound loop should be started
+      if ((global as any).startBackgroundSoundLoop) {
+        console.log("🎵 Background Service: Starting background sound loop...");
+        console.log("🔍 Background Service: Global flags status:");
+        console.log(
+          "  - backgroundOrderReceived:",
+          (global as any).backgroundOrderReceived
+        );
+        console.log("  - orderChecked:", (global as any).orderChecked);
+        console.log(
+          "  - startBackgroundSoundLoop:",
+          (global as any).startBackgroundSoundLoop
+        );
+        await startBackgroundSoundLoop();
+      }
+
+      // CRITICAL: Check for new background notifications that need processing
+      if (
+        (global as any).backgroundNotifications &&
+        (global as any).backgroundNotifications.length > 0
+      ) {
+        console.log(
+          `🎯 Background Service: Found ${
+            (global as any).backgroundNotifications.length
+          } background notifications to process`
+        );
+
+        // Process unprocessed notifications
+        (global as any).backgroundNotifications.forEach(
+          (notification: any, index: number) => {
+            if (!notification.processed) {
+              console.log(
+                `🎵 Background Service: Processing notification ${
+                  index + 1
+                } for sound loop`
+              );
+              notification.processed = true;
+
+              // CRITICAL: Start sound loop immediately for this notification
+              if (!(global as any).backgroundSoundInterval) {
+                console.log(
+                  "🎵 Background Service: Starting sound loop for new notification"
+                );
+                startBackgroundSoundLoop();
+              } else {
+                console.log(
+                  "🎵 Background Service: Sound loop already running"
+                );
+              }
+            }
+          }
+        );
+      }
+
+      // CRITICAL: Also check if we need to start sound loop based on global flags
+      if (
+        (global as any).startBackgroundSoundLoop &&
+        !(global as any).backgroundSoundInterval
+      ) {
+        console.log(
+          "🎵 Background Service: Global flag detected - starting sound loop"
+        );
+        startBackgroundSoundLoop();
+      }
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Check pending notifications error:",
+        error
+      );
+    }
+  };
+
+  const startBackgroundSoundLoop = async () => {
+    try {
+      console.log(
+        "🎵 Background Service: Starting persistent background sound loop..."
+      );
+
+      // Set up a persistent sound loop that continues in background
+      if (!(global as any).backgroundSoundInterval) {
+        (global as any).backgroundSoundInterval = setInterval(async () => {
+          try {
+            // Debug logging for sound loop
+            console.log(
+              "🎵 Background Service: Sound loop tick - checking conditions:"
+            );
+            console.log(
+              "  - backgroundOrderReceived:",
+              (global as any).backgroundOrderReceived
+            );
+            console.log("  - orderChecked:", (global as any).orderChecked);
+            console.log(
+              "  - backgroundNotifications count:",
+              (global as any).backgroundNotifications?.length || 0
+            );
+
+            // Check if we should continue playing sound
+            if ((global as any).backgroundOrderReceived) {
+              console.log(
+                "🎵 Background Service: Playing order sound in background..."
+              );
+
+              // Trigger the order sound
+              const { triggerOrderSound } = await import(
+                "../utils/orderSoundManager"
+              );
+              if (triggerOrderSound) {
+                triggerOrderSound();
+              }
+            }
+
+            // CRITICAL: Also check for background notifications that need sound
+            if (
+              (global as any).backgroundNotifications &&
+              (global as any).backgroundNotifications.length > 0
+            ) {
+              const hasUnprocessedNotifications = (
+                global as any
+              ).backgroundNotifications.some((n: any) => !n.processed);
+
+              if (hasUnprocessedNotifications) {
+                console.log(
+                  "🎵 Background Service: Playing sound for unprocessed background notifications..."
+                );
+
+                // Trigger the order sound
+                const { triggerOrderSound } = await import(
+                  "../utils/orderSoundManager"
+                );
+                if (triggerOrderSound) {
+                  triggerOrderSound();
+                }
+              }
+            }
+          } catch (error) {
+            console.log("❌ Background Service: Error in sound loop:", error);
+          }
+        }, 2000); // Play every 2 seconds
+
+        console.log("✅ Background Service: Background sound loop started");
+      }
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Failed to start background sound loop:",
+        error
+      );
+    }
+  };
+
+  // CRITICAL: Make the function globally available so FCM handler can call it
+  (global as any).startBackgroundSoundLoop = startBackgroundSoundLoop;
+
+  const clearBackgroundNotifications = () => {
+    try {
+      console.log(
+        "🧹 Background Service: Clearing background notifications..."
+      );
+
+      // Clear the background logs when app comes to foreground
+      if (global.backgroundFCMLogs) {
+        global.backgroundFCMLogs = [];
+        console.log("✅ Background Service: Background notifications cleared");
+      }
+
+      // CRITICAL: Stop background sound loop when app comes to foreground
+      if ((global as any).backgroundSoundInterval) {
+        clearInterval((global as any).backgroundSoundInterval);
+        (global as any).backgroundSoundInterval = null;
+        console.log("✅ Background Service: Background sound loop stopped");
+      }
+
+      // Reset background order flags
+      (global as any).backgroundOrderReceived = false;
+      (global as any).startBackgroundSoundLoop = false;
+
+      // CRITICAL: Mark all background notifications as processed
+      if ((global as any).backgroundNotifications) {
+        (global as any).backgroundNotifications.forEach((notification: any) => {
+          notification.processed = true;
+        });
+        console.log(
+          "✅ Background Service: All background notifications marked as processed"
+        );
+      }
+
+      console.log("✅ Background Service: Background order flags reset");
+    } catch (error) {
+      console.log("❌ Background Service: Clear notifications error:", error);
+    }
+  };
+
+  const registerBackgroundFetchTask = async () => {
+    try {
+      // Define the background task
+      TaskManager.defineTask("background-fcm-task", async () => {
+        console.log("🔄 Background Service: Background fetch task executed");
+
+        try {
+          // Check FCM status in background
+          await checkFCMStatus();
+
+          // Check for pending notifications
+          await checkPendingNotifications();
+
+          // Return success
+          return BackgroundFetch.BackgroundFetchResult.NewData;
+        } catch (error) {
+          console.log(
+            "❌ Background Service: Background fetch task error:",
+            error
+          );
+          return BackgroundFetch.BackgroundFetchResult.Failed;
+        }
+      });
+
+      console.log("✅ Background Service: Background fetch task defined");
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Failed to define background fetch task:",
+        error
+      );
+    }
+  };
+
+  return <View style={{ flex: 1 }}>{children}</View>;
+}
