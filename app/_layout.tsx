@@ -17,6 +17,7 @@ import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
+import BackgroundService from "../components/BackgroundService";
 import OTAUpdateModal from "../components/OTAUpdateModal";
 import "../global.css";
 import {
@@ -171,7 +172,9 @@ export default function RootLayout() {
             {/* --- Global order sound logic start --- */}
             <GlobalOrderSoundListener />
             {/* --- Global order sound logic end --- */}
-            <AuthGate />
+            <BackgroundService>
+              <AuthGate />
+            </BackgroundService>
             <Toast />
             <OTAUpdateModal
               visible={showUpdateModal}

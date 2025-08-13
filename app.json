@@ -13,7 +13,12 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "audio",
+          "fetch",
+          "remote-notification",
+          "background-processing"
+        ]
       }
     },
     "android": {
@@ -36,7 +41,7 @@
         "android.permission.POST_NOTIFICATIONS"
       ],
       "notificationSounds": {
-        "order_sound": "./assets/sound/order_sound.mp3"
+        "order_sound": "./assets/sound/order_sound.wav"
       },
       "notificationChannels": [
         {
@@ -58,6 +63,12 @@
     "plugins": [
       "expo-router",
       [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sound/order_sound.wav"]
+        }
+      ],
+      [
         "expo-audio",
         {
           "microphonePermission": "Allow Order-Management to access your microphone for order notification sounds."
@@ -72,8 +83,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
+      [
+        "expo-background-fetch",
+        {
+          "startOnBoot": true,
+          "stopOnTerminate": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

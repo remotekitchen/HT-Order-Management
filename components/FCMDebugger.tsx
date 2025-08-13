@@ -11,6 +11,16 @@ interface FCMStatus {
   error: string | null;
 }
 
+// Global variable to store background FCM messages
+declare global {
+  var backgroundFCMLogs: Array<{ timestamp: string; message: string }>;
+}
+
+// Initialize global logs
+if (typeof global.backgroundFCMLogs === "undefined") {
+  global.backgroundFCMLogs = [];
+}
+
 export default function FCMDebugger() {
   const [status, setStatus] = useState<FCMStatus>({
     isAvailable: false,
@@ -20,6 +30,16 @@ export default function FCMDebugger() {
     error: null,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [backgroundLogs, setBackgroundLogs] = useState<
+    Array<{ timestamp: string; message: string }>
+  >([]);
+
+  // Update background logs when component mounts
+  useEffect(() => {
+    if (global.backgroundFCMLogs) {
+      setBackgroundLogs([...global.backgroundFCMLogs]);
+    }
+  }, []);
 
   const checkStatus = async () => {
     setIsLoading(true);
@@ -100,163 +120,160 @@ export default function FCMDebugger() {
           )}...\n\nCheck console for full token.`,
           [{ text: "OK" }]
         );
-        // Refresh status
-        await checkStatus();
+        // Refresh status after registration
+        checkStatus();
       } else {
-        Alert.alert(
-          "❌ FCM Registration Failed",
-          "No token received. Check console for details."
-        );
+        Alert.alert("❌ FCM Registration Failed", "Check console for details.");
       }
-    } catch (error: any) {
-      console.error("❌ FCM Debugger registration error:", error);
-      Alert.alert(
-        "❌ FCM Registration Error",
-        error?.message || "Unknown error"
-      );
+    } catch (e: any) {
+      console.error("🚀 FCM Debugger registration error:", e);
+      Alert.alert("❌ FCM Registration Error", e?.message || "Unknown error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    checkStatus();
-  }, []);
+  const clearBackgroundLogs = () => {
+    global.backgroundFCMLogs = [];
+    setBackgroundLogs([]);
+    Alert.alert("✅ Logs Cleared", "Background FCM logs have been cleared.");
+  };
+
+  const refreshBackgroundLogs = () => {
+    if (global.backgroundFCMLogs) {
+      setBackgroundLogs([...global.backgroundFCMLogs]);
+    }
+  };
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16, backgroundColor: "#f5f5f5" }}>
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 16,
-          borderRadius: 8,
-          marginBottom: 16,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: "bold",
-            marginBottom: 16,
-            textAlign: "center",
-          }}
+    <ScrollView className="flex-1 bg-white p-4">
+      <Text className="text-2xl font-bold text-center mb-6">
+        🔍 FCM Debugger
+      </Text>
+
+      {/* Status Section */}
+      <View className="bg-gray-100 p-4 rounded-lg mb-4">
+        <Text className="text-lg font-semibold mb-2">📊 FCM Status</Text>
+        <Text>Available: {status.isAvailable ? "✅ Yes" : "❌ No"}</Text>
+        <Text>Permission: {status.hasPermission ? "✅ Yes" : "❌ No"}</Text>
+        <Text>Registered: {status.isRegistered ? "✅ Yes" : "❌ No"}</Text>
+        <Text>
+          Token: {status.currentToken ? "✅ Available" : "❌ Missing"}
+        </Text>
+        {status.error && (
+          <Text className="text-red-500">Error: {status.error}</Text>
+        )}
+      </View>
+
+      {/* Actions */}
+      <View className="flex-row space-x-2 mb-4">
+        <TouchableOpacity
+          onPress={checkStatus}
+          disabled={isLoading}
+          className="flex-1 bg-blue-500 p-3 rounded-lg"
         >
-          🔥 FCM Debugger
+          <Text className="text-white text-center font-semibold">
+            {isLoading ? "Checking..." : "Check Status"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={registerFCM}
+          disabled={isLoading}
+          className="flex-1 bg-green-500 p-3 rounded-lg"
+        >
+          <Text className="text-white text-center font-semibold">
+            {isLoading ? "Registering..." : "Register FCM"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Background FCM Logs Section */}
+      <View className="bg-yellow-50 p-4 rounded-lg mb-4 border border-yellow-200">
+        <Text className="text-lg font-semibold mb-2">
+          📱 Background FCM Logs
+        </Text>
+        <Text className="text-sm text-gray-600 mb-2">
+          These logs show FCM messages received when app is in background
         </Text>
 
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
-            Status:
-          </Text>
-          <Text style={{ color: status.isAvailable ? "green" : "red" }}>
-            📱 Firebase Messaging:{" "}
-            {status.isAvailable ? "Available" : "Not Available"}
-          </Text>
-          <Text style={{ color: status.hasPermission ? "green" : "orange" }}>
-            🔐 Permission: {status.hasPermission ? "Granted" : "Not Granted"}
-          </Text>
-          <Text style={{ color: status.isRegistered ? "green" : "orange" }}>
-            📝 Device Registered: {status.isRegistered ? "Yes" : "No"}
-          </Text>
-          <Text style={{ color: status.currentToken ? "green" : "red" }}>
-            🎯 Current Token:{" "}
-            {status.currentToken ? "Available" : "Not Available"}
-          </Text>
-          {status.error && (
-            <Text style={{ color: "red" }}>❌ Error: {status.error}</Text>
-          )}
+        <View className="flex-row space-x-2 mb-3">
+          <TouchableOpacity
+            onPress={refreshBackgroundLogs}
+            className="bg-blue-500 px-3 py-2 rounded-lg"
+          >
+            <Text className="text-white text-sm font-semibold">Refresh</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={clearBackgroundLogs}
+            className="bg-red-500 px-3 py-2 rounded-lg"
+          >
+            <Text className="text-white text-sm font-semibold">Clear</Text>
+          </TouchableOpacity>
         </View>
 
-        {status.currentToken && (
-          <View
-            style={{
-              marginBottom: 16,
-              padding: 12,
-              backgroundColor: "#f0f8ff",
-              borderRadius: 6,
-            }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
-              🎯 FCM Token (First 50 chars):
+        {backgroundLogs.length === 0 ? (
+          <Text className="text-gray-500 italic">
+            No background FCM messages logged yet. Place an order with app in
+            background to see logs here.
+          </Text>
+        ) : (
+          <View>
+            <Text className="text-sm font-semibold mb-2">
+              Total Background Messages: {backgroundLogs.length}
             </Text>
-            <Text
-              style={{ fontSize: 12, fontFamily: "monospace", color: "#333" }}
-            >
-              {status.currentToken.substring(0, 50)}...
-            </Text>
-            <Text style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
-              Full token length: {status.currentToken.length} characters
-            </Text>
+            {backgroundLogs.map((log, index) => (
+              <View
+                key={index}
+                className="bg-white p-3 rounded-lg mb-2 border border-gray-200"
+              >
+                <Text className="text-xs text-gray-500 mb-1">
+                  {log.timestamp}
+                </Text>
+                <Text className="text-sm font-mono">{log.message}</Text>
+              </View>
+            ))}
           </View>
         )}
-
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <TouchableOpacity
-            onPress={checkStatus}
-            disabled={isLoading}
-            style={{
-              backgroundColor: "#007AFF",
-              padding: 12,
-              borderRadius: 6,
-              flex: 1,
-              marginRight: 8,
-              opacity: isLoading ? 0.6 : 1,
-            }}
-          >
-            <Text
-              style={{ color: "white", textAlign: "center", fontWeight: "600" }}
-            >
-              {isLoading ? "Checking..." : "🔄 Check Status"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={registerFCM}
-            disabled={isLoading}
-            style={{
-              backgroundColor: "#34C759",
-              padding: 12,
-              borderRadius: 6,
-              flex: 1,
-              marginLeft: 8,
-              opacity: isLoading ? 0.6 : 1,
-            }}
-          >
-            <Text
-              style={{ color: "white", textAlign: "center", fontWeight: "600" }}
-            >
-              {isLoading ? "Registering..." : "🚀 Register FCM"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View
-          style={{
-            marginTop: 16,
-            padding: 12,
-            backgroundColor: "#fff3cd",
-            borderRadius: 6,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              marginBottom: 8,
-              color: "#856404",
-            }}
-          >
-            💡 Debug Tips:
-          </Text>
-          <Text style={{ fontSize: 12, color: "#856404", lineHeight: 18 }}>
-            • Make sure you're running on a physical device (not simulator)
-            {"\n"}• Check that google-services.json is properly configured{"\n"}
-            • Verify Firebase project has Cloud Messaging enabled{"\n"}• Check
-            console logs for detailed error messages{"\n"}• Ensure app has
-            notification permissions
-          </Text>
-        </View>
       </View>
+
+      {/* Instructions */}
+      <View className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <Text className="text-lg font-semibold mb-2">
+          📋 How to Test Background FCM
+        </Text>
+        <Text className="text-sm text-gray-700 mb-2">
+          1. Keep this debugger open
+        </Text>
+        <Text className="text-sm text-gray-700 mb-2">
+          2. Minimize your app (put in background)
+        </Text>
+        <Text className="text-sm text-gray-700 mb-2">
+          3. Place a new order from another device
+        </Text>
+        <Text className="text-sm text-gray-700 mb-2">
+          4. Check this section for background FCM logs
+        </Text>
+        <Text className="text-sm text-gray-700">
+          5. Listen for custom sound vs device default sound
+        </Text>
+      </View>
+
+      {/* Current Token Display */}
+      {status.currentToken && (
+        <View className="bg-green-50 p-4 rounded-lg border border-green-200 mt-4">
+          <Text className="text-lg font-semibold mb-2">
+            🔑 Current FCM Token
+          </Text>
+          <Text className="text-xs font-mono bg-white p-2 rounded border">
+            {status.currentToken}
+          </Text>
+          <Text className="text-xs text-gray-600 mt-2">
+            Copy this token to your backend for testing
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }

@@ -2,10 +2,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiSlice } from "../api/apiSlice";
 import { userLoggedIn } from "./authenticationSlice";
 
+// Define the login request interface
+interface LoginRequest {
+  email: string;
+  password: string;
+  fcm_token: string;
+}
+
 export const authenticationApi = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    login: builder.mutation({
+    login: builder.mutation<any, LoginRequest>({
       query: (data) => ({
         url: "api/accounts/v1/user/quick-login/",
         method: "POST",
