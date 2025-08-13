@@ -749,13 +749,52 @@ export default function BackgroundService({
         "🎵 Background Service: Starting persistent background sound loop..."
       );
 
-      // Set up a persistent sound loop that continues in background
+      // Use the new repeating sound functionality
+      try {
+        const { startRepeatingSound } = await import(
+          "../utils/backgroundAudioService"
+        );
+        const success = await startRepeatingSound();
+
+        if (success) {
+          console.log(
+            "✅ Background Service: Repeating sound started successfully"
+          );
+          // Set a flag to track that we're using the new sound system
+          (global as any).usingNewSoundSystem = true;
+        } else {
+          console.log(
+            "⚠️ Background Service: Failed to start repeating sound, falling back to old system"
+          );
+          // Fallback to old system if new one fails
+          await startOldSoundLoop();
+        }
+      } catch (error) {
+        console.log(
+          "⚠️ Background Service: New sound system failed, falling back to old system:",
+          error
+        );
+        await startOldSoundLoop();
+      }
+    } catch (error) {
+      console.log(
+        "❌ Background Service: Failed to start background sound loop:",
+        error
+      );
+    }
+  };
+
+  // Fallback to old sound loop system
+  const startOldSoundLoop = async () => {
+    try {
+      console.log("🔄 Background Service: Starting fallback sound loop...");
+
       if (!(global as any).backgroundSoundInterval) {
         (global as any).backgroundSoundInterval = setInterval(async () => {
           try {
             // Debug logging for sound loop
             console.log(
-              "🎵 Background Service: Sound loop tick - checking conditions:"
+              "🎵 Background Service: Fallback sound loop tick - checking conditions:"
             );
             console.log(
               "  - backgroundOrderReceived:",
@@ -770,7 +809,7 @@ export default function BackgroundService({
             // Check if we should continue playing sound
             if ((global as any).backgroundOrderReceived) {
               console.log(
-                "🎵 Background Service: Playing order sound in background..."
+                "🎵 Background Service: Playing order sound in background (fallback)..."
               );
 
               // Trigger the order sound
@@ -793,7 +832,7 @@ export default function BackgroundService({
 
               if (hasUnprocessedNotifications) {
                 console.log(
-                  "🎵 Background Service: Playing sound for unprocessed background notifications..."
+                  "🎵 Background Service: Playing sound for unprocessed background notifications (fallback)..."
                 );
 
                 // Trigger the order sound
@@ -806,15 +845,18 @@ export default function BackgroundService({
               }
             }
           } catch (error) {
-            console.log("❌ Background Service: Error in sound loop:", error);
+            console.log(
+              "❌ Background Service: Error in fallback sound loop:",
+              error
+            );
           }
         }, 2000); // Play every 2 seconds
 
-        console.log("✅ Background Service: Background sound loop started");
+        console.log("✅ Background Service: Fallback sound loop started");
       }
     } catch (error) {
       console.log(
-        "❌ Background Service: Failed to start background sound loop:",
+        "❌ Background Service: Failed to start fallback sound loop:",
         error
       );
     }
@@ -823,7 +865,7 @@ export default function BackgroundService({
   // CRITICAL: Make the function globally available so FCM handler can call it
   (global as any).startBackgroundSoundLoop = startBackgroundSoundLoop;
 
-  const clearBackgroundNotifications = () => {
+  const clearBackgroundNotifications = async () => {
     try {
       console.log(
         "🧹 Background Service: Clearing background notifications..."
@@ -840,6 +882,25 @@ export default function BackgroundService({
         clearInterval((global as any).backgroundSoundInterval);
         (global as any).backgroundSoundInterval = null;
         console.log("✅ Background Service: Background sound loop stopped");
+      }
+
+      // Stop the repeating sound (new system)
+      if ((global as any).usingNewSoundSystem) {
+        try {
+          const { stopRepeatingSound } = await import(
+            "../utils/backgroundAudioService"
+          );
+          await stopRepeatingSound();
+          console.log(
+            "✅ Background Service: Repeating sound stopped (new system)"
+          );
+          (global as any).usingNewSoundSystem = false;
+        } catch (error) {
+          console.log(
+            "⚠️ Background Service: Could not stop repeating sound (new system):",
+            error
+          );
+        }
       }
 
       // Reset background order flags

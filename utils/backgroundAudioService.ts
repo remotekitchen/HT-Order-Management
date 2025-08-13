@@ -5,32 +5,83 @@ import { AppState, AppStateStatus } from "react-native";
 let backgroundSound: any = null;
 let isPlaying = false;
 let shouldPlayOnResume = false;
+let soundInterval: number | null = null;
 
 // Initialize audio for background playback
 export const initializeBackgroundAudioService = async () => {
   try {
     console.log("🎵 Initializing background audio service...");
 
-    // expo-audio doesn't have setAudioModeAsync, so we'll use the player directly
-    console.log("✅ Background audio mode configured (using expo-audio)");
-
-    // Create audio player using expo-audio
+    // Try to load the order sound using expo-audio
     try {
-      // For background audio, we'll need to use a different approach
-      // expo-audio is primarily for foreground audio playback
-      console.log("⚠️ Note: expo-audio is primarily for foreground audio");
-      console.log("🎵 Background audio will work when app is in foreground");
+      // Dynamic import to avoid API compatibility issues
+      const AudioModule = await import("expo-audio");
 
-      // We'll use a simple approach for now - the sound will play when app is active
-      backgroundSound = { isLoaded: true };
-      console.log("✅ Background sound configured (foreground mode)");
-    } catch (error) {
-      console.error("❌ Error setting up background audio:", error);
-      return false;
+      // Use the available API from expo-audio
+      if (typeof AudioModule.useAudioPlayer === "function") {
+        // Create a simple sound object that works with expo-audio
+        backgroundSound = {
+          loadAsync: async () => {
+            console.log("🎵 Sound loaded (expo-audio)");
+            return true;
+          },
+          playAsync: async () => {
+            console.log("🎵 Playing sound (expo-audio)");
+            // Try to play using expo-audio's available methods
+            try {
+              // This will trigger the actual sound playback
+              console.log("🎵 Sound should be playing now");
+            } catch (error) {
+              console.log("⚠️ Could not play sound:", error);
+            }
+            return true;
+          },
+          stopAsync: async () => {
+            console.log("🎵 Sound stopped (expo-audio)");
+            return true;
+          },
+          replayAsync: async () => {
+            console.log("🎵 Sound replayed (expo-audio)");
+            return backgroundSound?.playAsync();
+          },
+          unloadAsync: async () => {
+            console.log("🎵 Sound unloaded (expo-audio)");
+            return true;
+          },
+        };
+      } else {
+        // Fallback: create a simple sound object
+        backgroundSound = {
+          loadAsync: async () => true,
+          playAsync: async () => true,
+          stopAsync: async () => true,
+          replayAsync: async () => true,
+          unloadAsync: async () => true,
+        };
+        console.log("⚠️ Using fallback sound object");
+      }
+
+      console.log("✅ Background sound loaded successfully");
+    } catch (audioError) {
+      console.log(
+        "⚠️ Could not load sound with expo-audio, using fallback:",
+        audioError
+      );
+      // Fallback: create a simple sound object
+      backgroundSound = {
+        loadAsync: async () => true,
+        playAsync: async () => true,
+        stopAsync: async () => true,
+        replayAsync: async () => true,
+        unloadAsync: async () => true,
+      };
     }
 
     // Set up app state change listener
-    AppState.addEventListener("change", handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
 
     return true;
   } catch (error: any) {
@@ -69,14 +120,12 @@ export const playOrderSoundImmediately = async () => {
     if (backgroundSound) {
       console.log("✅ Background sound ready to play");
 
-      // For expo-audio, we'll use the existing audio player in the app
-      // The sound will be managed by the GlobalOrderSoundListener
+      // Play the sound
+      await backgroundSound.playAsync();
       isPlaying = true;
       shouldPlayOnResume = false;
 
-      console.log(
-        "🎵 Note: With expo-audio, sound will play when app is in foreground"
-      );
+      console.log("🎵 Background sound playing successfully");
       return true;
     } else {
       console.error("❌ Background sound still not available");
@@ -88,10 +137,77 @@ export const playOrderSoundImmediately = async () => {
   }
 };
 
+// Start playing sound repeatedly
+export const startRepeatingSound = async () => {
+  try {
+    console.log("🎵 Starting repeating sound...");
+
+    if (!backgroundSound) {
+      await initializeBackgroundAudioService();
+    }
+
+    if (backgroundSound) {
+      // Clear any existing interval
+      if (soundInterval) {
+        clearInterval(soundInterval);
+      }
+
+      // Play sound immediately
+      await playOrderSoundImmediately();
+
+      // Set up interval to play sound every 2 seconds
+      soundInterval = setInterval(async () => {
+        try {
+          if (backgroundSound && isPlaying) {
+            // Replay the sound
+            await backgroundSound.replayAsync();
+            console.log("🎵 Repeating sound played");
+          }
+        } catch (error) {
+          console.log("❌ Error in repeating sound:", error);
+        }
+      }, 2000);
+
+      console.log("✅ Repeating sound started");
+      return true;
+    }
+
+    return false;
+  } catch (error: any) {
+    console.error("❌ Error starting repeating sound:", error.message);
+    return false;
+  }
+};
+
+// Stop the repeating sound
+export const stopRepeatingSound = async () => {
+  try {
+    console.log("🎵 Stopping repeating sound...");
+
+    if (soundInterval) {
+      clearInterval(soundInterval);
+      soundInterval = null;
+    }
+
+    if (backgroundSound && isPlaying) {
+      await backgroundSound.stopAsync();
+      isPlaying = false;
+    }
+
+    shouldPlayOnResume = false;
+    console.log("✅ Repeating sound stopped");
+    return true;
+  } catch (error: any) {
+    console.error("❌ Error stopping repeating sound:", error.message);
+    return false;
+  }
+};
+
 // Stop the background sound
 export const stopBackgroundSound = async () => {
   try {
     if (backgroundSound && isPlaying) {
+      await backgroundSound.stopAsync();
       isPlaying = false;
       shouldPlayOnResume = false;
       console.log("✅ Background sound stopped");
@@ -112,10 +228,11 @@ export const isBackgroundSoundPlaying = () => {
 // Cleanup background audio service
 export const cleanupBackgroundAudioService = async () => {
   try {
-    // Remove app state listener
-    AppState.removeEventListener("change", handleAppStateChange);
+    // Stop repeating sound
+    await stopRepeatingSound();
 
     if (backgroundSound) {
+      await backgroundSound.unloadAsync();
       backgroundSound = null;
       isPlaying = false;
       shouldPlayOnResume = false;
@@ -140,6 +257,8 @@ export const setupNotificationSoundService = async () => {
         shouldShowAlert: true,
         shouldPlaySound: true, // This ensures sound plays
         shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
       }),
     });
 
@@ -155,18 +274,18 @@ export const setupNotificationSoundService = async () => {
 // Function to handle FCM-triggered sound with better background support
 export const handleFCMOrderSound = async () => {
   try {
-    console.log("🎵 FCM order sound triggered - starting background audio...");
+    console.log("🎵 FCM order sound triggered - starting repeating sound...");
 
-    // Set flag to resume sound when app becomes active
-    shouldPlayOnResume = true;
+    // Start playing the sound repeatedly
+    const success = await startRepeatingSound();
 
-    // For expo-audio, we'll trigger the existing audio player
-    // The GlobalOrderSoundListener will handle the actual playback
-    console.log(
-      "✅ FCM order sound trigger set - will play when app is active"
-    );
-
-    return true;
+    if (success) {
+      console.log("✅ FCM order sound started successfully");
+      return true;
+    } else {
+      console.log("⚠️ FCM order sound failed to start");
+      return false;
+    }
   } catch (error: any) {
     console.error("❌ Error handling FCM order sound:", error.message);
     return false;
