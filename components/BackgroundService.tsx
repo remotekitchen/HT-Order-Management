@@ -765,7 +765,7 @@ export default function BackgroundService({
               error
             );
           }
-        }, 25000); // Play every 25 seconds
+        }, 30000); // Wait 30 seconds (slightly longer than sound duration) to ensure full playback
 
         // console.log removed
       }

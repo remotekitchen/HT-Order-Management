@@ -230,12 +230,15 @@ function GlobalOrderSoundListener() {
           await player.play();
         } catch (e) {}
       })();
+
+      // Set up interval to restart sound after it finishes
       intervalRef.current = setInterval(async () => {
         try {
+          // Restart the sound after it finishes
           await player.seekTo(0);
           await player.play();
         } catch (e) {}
-      }, 25000); // Play every 25 seconds (adjust to match your sound length)
+      }, 30000); // Wait 30 seconds (slightly longer than sound duration) to ensure full playback
     } else if ((!hasPending && !fcmTriggered) || isPaused) {
       // Stop looping sound if no pending orders AND no FCM trigger, OR sound is paused
       if (intervalRef.current) {
