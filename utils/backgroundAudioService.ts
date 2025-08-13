@@ -128,7 +128,7 @@ export const startRepeatingSound = async () => {
       // Play sound immediately
       await playOrderSoundImmediately();
 
-      // Set up interval to play sound every 2 seconds
+      // Set up interval to play sound every 25 seconds
       soundInterval = setInterval(async () => {
         try {
           if (backgroundSound && isPlaying) {
@@ -138,7 +138,7 @@ export const startRepeatingSound = async () => {
         } catch (error) {
           // console.error("❌ Error in repeating sound:", error);
         }
-      }, 2000);
+      }, 25000);
 
       return true;
     }

@@ -765,7 +765,7 @@ export default function BackgroundService({
               error
             );
           }
-        }, 2000); // Play every 2 seconds
+        }, 25000); // Play every 25 seconds
 
         // console.log removed
       }

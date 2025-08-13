@@ -30,6 +30,7 @@ import {
 } from "../utils/fcm";
 import {
   cleanupOrderSoundManager,
+  subscribeToSoundPauseState,
   wasOrderSoundTriggered,
 } from "../utils/orderSoundManager";
 import Home from "./home";
@@ -38,7 +39,6 @@ import HomeScreen from "./index";
 // Import for order sound functionality
 import { useGetIncomingOrdersQuery } from "@/redux/feature/order/orderApi";
 import { useAudioPlayer } from "expo-audio";
-import { subscribeToSoundPauseState } from "../utils/orderSoundManager";
 
 const theme = extendTheme({});
 
@@ -235,7 +235,7 @@ function GlobalOrderSoundListener() {
           await player.seekTo(0);
           await player.play();
         } catch (e) {}
-      }, 2000); // Play every 2 seconds (adjust to match your sound length)
+      }, 25000); // Play every 25 seconds (adjust to match your sound length)
     } else if ((!hasPending && !fcmTriggered) || isPaused) {
       // Stop looping sound if no pending orders AND no FCM trigger, OR sound is paused
       if (intervalRef.current) {
