@@ -10,8 +10,6 @@ let soundInterval: number | null = null;
 // Initialize audio for background playback
 export const initializeBackgroundAudioService = async () => {
   try {
-    console.log("🎵 Initializing background audio service...");
-
     // Try to load the order sound using expo-audio
     try {
       // Dynamic import to avoid API compatibility issues
@@ -22,30 +20,24 @@ export const initializeBackgroundAudioService = async () => {
         // Create a simple sound object that works with expo-audio
         backgroundSound = {
           loadAsync: async () => {
-            console.log("🎵 Sound loaded (expo-audio)");
             return true;
           },
           playAsync: async () => {
-            console.log("🎵 Playing sound (expo-audio)");
             // Try to play using expo-audio's available methods
             try {
               // This will trigger the actual sound playback
-              console.log("🎵 Sound should be playing now");
             } catch (error) {
-              console.log("⚠️ Could not play sound:", error);
+              console.error("⚠️ Could not play sound:", error);
             }
             return true;
           },
           stopAsync: async () => {
-            console.log("🎵 Sound stopped (expo-audio)");
             return true;
           },
           replayAsync: async () => {
-            console.log("🎵 Sound replayed (expo-audio)");
             return backgroundSound?.playAsync();
           },
           unloadAsync: async () => {
-            console.log("🎵 Sound unloaded (expo-audio)");
             return true;
           },
         };
@@ -58,15 +50,8 @@ export const initializeBackgroundAudioService = async () => {
           replayAsync: async () => true,
           unloadAsync: async () => true,
         };
-        console.log("⚠️ Using fallback sound object");
       }
-
-      console.log("✅ Background sound loaded successfully");
     } catch (audioError) {
-      console.log(
-        "⚠️ Could not load sound with expo-audio, using fallback:",
-        audioError
-      );
       // Fallback: create a simple sound object
       backgroundSound = {
         loadAsync: async () => true,
@@ -85,24 +70,20 @@ export const initializeBackgroundAudioService = async () => {
 
     return true;
   } catch (error: any) {
-    console.error(
-      "❌ Failed to initialize background audio service:",
-      error.message
-    );
+    // console.error(
+    //   "❌ Failed to initialize background audio service:",
+    //   error.message
+    // );
     return false;
   }
 };
 
 // Handle app state changes (foreground/background)
 const handleAppStateChange = (nextAppState: AppStateStatus) => {
-  console.log("📱 App state changed to:", nextAppState);
-
   if (nextAppState === "active" && shouldPlayOnResume) {
-    console.log("🎵 App became active, resuming sound playback...");
     shouldPlayOnResume = false;
     playOrderSoundImmediately().catch(console.error);
   } else if (nextAppState === "background" && isPlaying) {
-    console.log("🎵 App going to background, sound should continue...");
     // Sound should continue playing in background
   }
 };
@@ -110,29 +91,23 @@ const handleAppStateChange = (nextAppState: AppStateStatus) => {
 // Play order sound immediately (works in foreground and background)
 export const playOrderSoundImmediately = async () => {
   try {
-    console.log("🎵 Attempting to play background sound immediately...");
-
     if (!backgroundSound) {
-      console.log("🎵 Background sound not initialized, initializing now...");
       await initializeBackgroundAudioService();
     }
 
     if (backgroundSound) {
-      console.log("✅ Background sound ready to play");
-
       // Play the sound
       await backgroundSound.playAsync();
       isPlaying = true;
       shouldPlayOnResume = false;
 
-      console.log("🎵 Background sound playing successfully");
       return true;
     } else {
-      console.error("❌ Background sound still not available");
+      // console.error("❌ Background sound still not available");
       return false;
     }
   } catch (error: any) {
-    console.error("❌ Error playing background sound:", error.message);
+    // console.error("❌ Error playing background sound:", error.message);
     return false;
   }
 };
@@ -140,8 +115,6 @@ export const playOrderSoundImmediately = async () => {
 // Start playing sound repeatedly
 export const startRepeatingSound = async () => {
   try {
-    console.log("🎵 Starting repeating sound...");
-
     if (!backgroundSound) {
       await initializeBackgroundAudioService();
     }
@@ -161,14 +134,12 @@ export const startRepeatingSound = async () => {
           if (backgroundSound && isPlaying) {
             // Replay the sound
             await backgroundSound.replayAsync();
-            console.log("🎵 Repeating sound played");
           }
         } catch (error) {
-          console.log("❌ Error in repeating sound:", error);
+          // console.error("❌ Error in repeating sound:", error);
         }
       }, 2000);
 
-      console.log("✅ Repeating sound started");
       return true;
     }
 
@@ -182,8 +153,6 @@ export const startRepeatingSound = async () => {
 // Stop the repeating sound
 export const stopRepeatingSound = async () => {
   try {
-    console.log("🎵 Stopping repeating sound...");
-
     if (soundInterval) {
       clearInterval(soundInterval);
       soundInterval = null;
@@ -195,7 +164,6 @@ export const stopRepeatingSound = async () => {
     }
 
     shouldPlayOnResume = false;
-    console.log("✅ Repeating sound stopped");
     return true;
   } catch (error: any) {
     console.error("❌ Error stopping repeating sound:", error.message);
@@ -210,7 +178,6 @@ export const stopBackgroundSound = async () => {
       await backgroundSound.stopAsync();
       isPlaying = false;
       shouldPlayOnResume = false;
-      console.log("✅ Background sound stopped");
       return true;
     }
     return false;
@@ -236,7 +203,6 @@ export const cleanupBackgroundAudioService = async () => {
       backgroundSound = null;
       isPlaying = false;
       shouldPlayOnResume = false;
-      console.log("✅ Background audio service cleaned up");
     }
   } catch (error: any) {
     console.error(
@@ -249,8 +215,6 @@ export const cleanupBackgroundAudioService = async () => {
 // Set up notification sound for when app is completely killed
 export const setupNotificationSoundService = async () => {
   try {
-    console.log("🎵 Setting up notification sound service...");
-
     // Configure notifications to play sound even when app is killed
     await Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -261,8 +225,6 @@ export const setupNotificationSoundService = async () => {
         shouldShowList: true,
       }),
     });
-
-    console.log("✅ Notification sound service configured");
   } catch (error: any) {
     console.error(
       "❌ Error setting up notification sound service:",
@@ -274,16 +236,12 @@ export const setupNotificationSoundService = async () => {
 // Function to handle FCM-triggered sound with better background support
 export const handleFCMOrderSound = async () => {
   try {
-    console.log("🎵 FCM order sound triggered - starting repeating sound...");
-
     // Start playing the sound repeatedly
     const success = await startRepeatingSound();
 
     if (success) {
-      console.log("✅ FCM order sound started successfully");
       return true;
     } else {
-      console.log("⚠️ FCM order sound failed to start");
       return false;
     }
   } catch (error: any) {

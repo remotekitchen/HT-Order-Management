@@ -31,11 +31,8 @@ export default function BackgroundService({
             bypassDnd: true, // optional
           }
         );
-        console.log(
-          "✅ Background Service: Android notification channel created"
-        );
       } catch (error) {
-        console.log(
+        console.error(
           "❌ Background Service: Failed to create notification channel:",
           error
         );
@@ -44,33 +41,20 @@ export default function BackgroundService({
   };
 
   useEffect(() => {
-    console.log(
-      "🚀 Background Service: Starting persistent background service..."
-    );
-
     // CRITICAL: Setup notification channel first
     setupNotificationChannel();
 
     // CRITICAL: Initialize global variables if they don't exist
     if (typeof (global as any).backgroundNotifications === "undefined") {
       (global as any).backgroundNotifications = [];
-      console.log(
-        "✅ Background Service: Initialized global.backgroundNotifications"
-      );
     }
 
     if (typeof (global as any).backgroundOrderReceived === "undefined") {
       (global as any).backgroundOrderReceived = false;
-      console.log(
-        "✅ Background Service: Initialized global.backgroundOrderReceived"
-      );
     }
 
     if (typeof (global as any).startBackgroundSoundLoop === "undefined") {
       (global as any).startBackgroundSoundLoop = false;
-      console.log(
-        "✅ Background Service: Initialized global.startBackgroundSoundLoop"
-      );
     }
 
     // Start persistent background task
@@ -180,9 +164,6 @@ export default function BackgroundService({
           hasUnprocessedNotifications &&
           !(global as any).backgroundSoundInterval
         ) {
-          console.log(
-            "🎵 Background Service: Periodic check found unprocessed notifications - starting sound loop"
-          );
           startBackgroundSoundLoop();
           return;
         }
@@ -193,16 +174,11 @@ export default function BackgroundService({
         (global as any).backgroundOrderReceived &&
         !(global as any).backgroundSoundInterval
       ) {
-        console.log(
-          "🎵 Background Service: Periodic check found backgroundOrderReceived flag - starting sound loop"
-        );
         startBackgroundSoundLoop();
         return;
       }
-
-      console.log("🔍 Background Service: No new notifications found");
     } catch (error) {
-      console.log(
+      console.error(
         "❌ Background Service: Error in periodic notification check:",
         error
       );
@@ -214,34 +190,23 @@ export default function BackgroundService({
       const messagingModule = await import("@react-native-firebase/messaging");
       if (messagingModule.default) {
         messagingModule.default().onMessage((remoteMessage: any) => {
-          console.log(
-            "🎵 Background Service: Direct FCM message received:",
-            remoteMessage.notification?.title
-          );
-
           // Check if this is an order notification
           if (
             remoteMessage.notification?.title?.toLowerCase().includes("order")
           ) {
-            console.log(
-              "🎵 Background Service: Order notification detected via direct handler"
-            );
             (global as any).backgroundOrderReceived = true;
             (global as any).startBackgroundSoundLoop = true;
 
             // Start sound loop immediately
             if (!(global as any).backgroundSoundInterval) {
-              console.log(
-                "🎵 Background Service: Starting sound loop via direct FCM handler"
-              );
               startBackgroundSoundLoop();
             }
           }
         });
-        console.log("✅ Background Service: Direct FCM handler set up");
+        // console.log removed
       }
     } catch (error) {
-      console.log(
+      console.error(
         "⚠️ Background Service: Could not set up direct FCM handler:",
         error
       );
@@ -249,8 +214,6 @@ export default function BackgroundService({
   };
 
   const startBackgroundTask = async () => {
-    console.log("🔄 Background Service: Starting background task...");
-
     try {
       // Register background fetch task for Expo managed workflow
       await registerBackgroundFetchTask();
@@ -262,9 +225,9 @@ export default function BackgroundService({
         startOnBoot: true, // Start after device restart
       });
 
-      console.log("✅ Background Service: Expo background fetch registered");
+      // console.log removed
     } catch (error) {
-      console.log(
+      console.error(
         "⚠️ Background Service: Background fetch not available, using JS fallback"
       );
     }
@@ -273,7 +236,6 @@ export default function BackgroundService({
     backgroundTaskRef.current = setInterval(() => {
       // This keeps the JavaScript thread alive
       const timestamp = new Date().toISOString();
-      console.log(`🔄 Background Service: Keep-alive ping at ${timestamp}`);
 
       // Check FCM connection status
       checkFCMStatus();
@@ -294,9 +256,6 @@ export default function BackgroundService({
           hasUnprocessedNotifications &&
           !(global as any).backgroundSoundInterval
         ) {
-          console.log(
-            "🎵 Background Service: Keep-alive ping detected unprocessed notifications - starting sound loop"
-          );
           startBackgroundSoundLoop();
         }
       }
@@ -306,9 +265,6 @@ export default function BackgroundService({
         (global as any).startBackgroundSoundLoop &&
         !(global as any).backgroundSoundInterval
       ) {
-        console.log(
-          "🎵 Background Service: Keep-alive ping forcing sound loop start"
-        );
         startBackgroundSoundLoop();
       }
 
@@ -317,42 +273,34 @@ export default function BackgroundService({
         (global as any).backgroundOrderReceived &&
         !(global as any).backgroundSoundInterval
       ) {
-        console.log(
-          "🎵 Background Service: Keep-alive ping found backgroundOrderReceived flag - starting sound loop"
-        );
         startBackgroundSoundLoop();
       }
     }, 30000); // Every 30 seconds
 
-    console.log("✅ Background Service: Background task started");
+    // console.log removed
   };
 
   const stopBackgroundTask = () => {
     if (backgroundTaskRef.current) {
       clearInterval(backgroundTaskRef.current);
       backgroundTaskRef.current = null;
-      console.log("🛑 Background Service: Background task stopped");
     }
   };
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-    console.log(
-      `🔄 Background Service: App state changed from ${appState.current} to ${nextAppState}`
-    );
-
     if (
       appState.current.match(/inactive|background/) &&
       nextAppState === "active"
     ) {
       // App came to foreground
-      console.log("📱 Background Service: App came to foreground");
+
       handleAppForeground();
     } else if (
       appState.current === "active" &&
       nextAppState.match(/inactive|background/)
     ) {
       // App went to background
-      console.log("📱 Background Service: App went to background");
+
       handleAppBackground();
     }
 
@@ -360,8 +308,6 @@ export default function BackgroundService({
   };
 
   const handleAppForeground = () => {
-    console.log("🎯 Background Service: Handling app foreground...");
-
     // Refresh FCM token if needed
     refreshFCMToken();
 
@@ -370,8 +316,6 @@ export default function BackgroundService({
   };
 
   const handleAppBackground = () => {
-    console.log("🎯 Background Service: Handling app background...");
-
     // Ensure FCM is still listening
     ensureFCMListening();
 
@@ -383,9 +327,6 @@ export default function BackgroundService({
       (global as any).backgroundOrderReceived &&
       !(global as any).backgroundSoundInterval
     ) {
-      console.log(
-        "🎵 Background Service: App going to background - starting sound loop immediately"
-      );
       startBackgroundSoundLoop();
     }
   };
@@ -394,84 +335,58 @@ export default function BackgroundService({
     try {
       // Check if messaging is available
       if (!messaging) {
-        console.log("⚠️ Background Service: FCM not available");
+        // console.log removed
         return;
       }
 
       // Check permission status
       const authStatus = await messaging().hasPermission();
-      console.log("🔍 Background Service: FCM permission status:", authStatus);
 
       // Check if device is registered
       const isRegistered = await messaging()
         .isDeviceRegisteredForRemoteMessages;
-      console.log("🔍 Background Service: Device registered:", isRegistered);
 
       // Try to get current token
       try {
         const currentToken = await messaging().getToken();
         if (currentToken) {
-          console.log("✅ Background Service: FCM token available");
+          // console.log removed
           console.log("🔑 Background Service: FCM Token:", currentToken);
-          console.log(
-            "📏 Background Service: Token length:",
-            currentToken.length
-          );
-          console.log(
-            "👀 Background Service: Token preview:",
-            currentToken.substring(0, 20) + "..."
-          );
         } else {
-          console.log("⚠️ Background Service: FCM token missing");
+          // console.log removed
         }
       } catch (tokenError) {
-        console.log("❌ Background Service: FCM token error:", tokenError);
+        // console.log removed
       }
     } catch (error) {
-      console.log("❌ Background Service: FCM status check error:", error);
+      // console.log removed
     }
   };
 
   const refreshFCMToken = async () => {
     try {
-      console.log("🔄 Background Service: Refreshing FCM token...");
       const newToken = await messaging().getToken();
       if (newToken) {
-        console.log("✅ Background Service: FCM token refreshed");
-        console.log("🔑 Background Service: New FCM Token:", newToken);
-        console.log(
-          "📏 Background Service: New token length:",
-          newToken.length
-        );
-        console.log(
-          "👀 Background Service: New token preview:",
-          newToken.substring(0, 20) + "..."
-        );
+        // console.log removed
         // TODO: Send new token to your backend
       }
     } catch (error) {
-      console.log("❌ Background Service: FCM token refresh error:", error);
+      // console.log removed
     }
   };
 
   const ensureFCMListening = () => {
-    console.log("🔊 Background Service: Ensuring FCM is listening...");
-
     // The background message handler is already set up in fcm.ts
     // This just ensures it's working
-    console.log("✅ Background Service: FCM background handler is active");
+    // console.log removed
   };
 
   const startBackgroundAudioService = async () => {
     try {
-      console.log(
-        "🎵 Background Service: Starting background audio service..."
-      );
-
       // Initialize audio session for background
       // Note: expo-av is not imported to avoid linter errors
       // Audio functionality will still work through FCM background handler
-      console.log("✅ Background Service: Background audio service started");
+      // console.log removed
     } catch (error) {
       console.log(
         "❌ Background Service: Background audio service error:",
@@ -520,7 +435,7 @@ export default function BackgroundService({
       if (notificationData.data) {
         console.log(`📊 ${source}: DATA SECTION:`);
         Object.entries(notificationData.data).forEach(([key, value]) => {
-          console.log(`    - ${key}: ${value}`);
+          // console.log removed
         });
       }
 
@@ -655,7 +570,7 @@ export default function BackgroundService({
               });
             }
 
-            console.log(`⏰ Background Service: Received at: ${log.timestamp}`);
+            // console.log removed
             console.log("=".repeat(80));
           } catch (parseError) {
             console.log(
@@ -852,7 +767,7 @@ export default function BackgroundService({
           }
         }, 2000); // Play every 2 seconds
 
-        console.log("✅ Background Service: Fallback sound loop started");
+        // console.log removed
       }
     } catch (error) {
       console.log(
@@ -874,14 +789,14 @@ export default function BackgroundService({
       // Clear the background logs when app comes to foreground
       if (global.backgroundFCMLogs) {
         global.backgroundFCMLogs = [];
-        console.log("✅ Background Service: Background notifications cleared");
+        // console.log removed
       }
 
       // CRITICAL: Stop background sound loop when app comes to foreground
       if ((global as any).backgroundSoundInterval) {
         clearInterval((global as any).backgroundSoundInterval);
         (global as any).backgroundSoundInterval = null;
-        console.log("✅ Background Service: Background sound loop stopped");
+        // console.log removed
       }
 
       // Stop the repeating sound (new system)
@@ -917,9 +832,9 @@ export default function BackgroundService({
         );
       }
 
-      console.log("✅ Background Service: Background order flags reset");
+      // console.log removed
     } catch (error) {
-      console.log("❌ Background Service: Clear notifications error:", error);
+      // console.log removed
     }
   };
 
@@ -947,7 +862,7 @@ export default function BackgroundService({
         }
       });
 
-      console.log("✅ Background Service: Background fetch task defined");
+      // console.log removed
     } catch (error) {
       console.log(
         "❌ Background Service: Failed to define background fetch task:",
